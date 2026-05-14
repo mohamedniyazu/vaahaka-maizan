@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="dv" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ވާހަކަ މައިޒާން</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  @font-face {
+    font-family: 'Faruma';
+    src: url('https://dhivehi.mv/fonts/data/df/Faruma.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  :root {
+    --cream: #F0EDE8; --coral: #FF5757; --teal: #0D9E9E;
+    --teal-dark: #0A7A7A; --teal-light: #E8F7F7; --amber: #FFB800;
+    --navy: #0A2533; --navy-light: #0D3244; --mint: #3DDBB5;
+    --white: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--cream); font-family: 'Faruma', 'Noto Sans Thaana', 'MV Boli', sans-serif; }
+  .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--teal); border-radius: 4px; }
+  input, textarea, button { font-family: 'Faruma', 'Noto Sans Thaana', 'MV Boli', sans-serif; }
+  .spinner { width: 40px; height: 40px; border: 4px solid rgba(13,158,158,0.2); border-top: 4px solid #0D9E9E; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const { useState, useEffect, useRef } = React;
+
+// Supabase client
+const { createClient } = supabase;
+const sb = createClient(
+  'https://bohpxaxsvxxwzjasssdc.supabase.co',
+  'sb_publishable_kHmUmzpxt7IO19SKu3XJPQ_Zbc01EH3'
+);
+
+const C = {
+  cream:"#F0EDE8", coral:"#FF5757", teal:"#0D9E9E", tealDark:"#0A7A7A",
+  tealLight:"#E8F7F7", amber:"#FFB800", navy:"#0A2533", navyLight:"#0D3244",
+  mint:"#3DDBB5", white:"#FFFFFF", gray:"#6B7280", lightGray:"#D1D5DB",
+};
+
+const GENRES = [
+  { id:"fantasy", label:"ފެންޓަސީ", emoji:"🌙" },
+  { id:"romance", label:"ލޯބި", emoji:"💖" },
+  { id:"mystery", label:"މިސްޓްރީ", emoji:"🔍" },
+  { id:"horror", label:"ބިރުވެރި", emoji:"👻" },
+  { id:"adventure", label:"އެޑްވެންޗަރ", emoji:"🏝️" },
+];
+
+const COVER_COLORS = [
+  `linear-gradient(135deg, #0D9E9E, #0A2533)`,
+  `linear-gradient(135deg, #0A2533, #0A7A7A)`,
+  `linear-gradient(135deg, #3DDBB5, #0D9E9E)`,
+  `linear-gradient(135deg, #FF5757, #FFB800)`,
+  `linear-gradient(135deg, #FFB800, #FF5757)`,
+  `linear-gradient(135deg, #FF5757, #0A2533)`,
+];
+
+function Avatar({ letter, size=36, bg=C.teal }) {
+  return <div style={{width:size,height:size,borderRadius:"50%",background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.38,fontWeight:"bold",color:C.white,flexShrink:0}}>{letter}</div>;
+}
+
+function Badge({ children, bg, color }) {
+  return <span style={{fontSize:"11px",background:bg,color:color||C.white,padding:"3px 10px",borderRadius:"999px",fontWeight:"600"}}>{children}</span>;
+}
+
+function Notif({ msg }) {
+  if (!msg) return null;
+  return <div style={{position:"fixed",top:"16px",left:"50%",transform:"translateX(-50%)",zIndex:999,background:C.teal,color:C.white,padding:"12px 24px",borderRadius:"999px",fontSize:"14px",boxShadow:"0 8px 24px rgba(13,158,158,0.4)",fontWeight:"600",whiteSpace:"nowrap",maxWidth:"90vw",textAlign:"center"}}>{msg}</div>;
+}
+
+function LoadingScreen() {
+  return (
+    <div style={{minHeight:"100vh",background:`linear-gradient(160deg, ${C.teal} 0%, ${C.navy} 100%)`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"20px"}}>
+      <div style={{width:"80px",height:"80px",borderRadius:"50%",background:C.coral,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"40px",boxShadow:"0 8px 24px rgba(255,87,87,0.4)"}}>📖</div>
+      <h1 style={{color:C.white,fontSize:"28px",fontWeight:"900",margin:0}}>ވާހަކަ މައިޒާން</h1>
+      <div className="spinner"></div>
+    </div>
+  );
+}
+
+function App() {
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [screen, setScreen] = useState("login");
+  const [activeTab, setActiveTab] = useState("public");
+  const [publicStories, setPublicStories] = useState([]);
+  const [groupStories, setGroupStories] = useState([]);
+  const [selectedStory, setSelectedStory] = useState(null);
+  const [contributions, setContributions] = useState([]);
+  const [notification, setNotification] = useState("");
+  const [newContrib, setNewContrib] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+  const [createType, setCreateType] = useState("public");
+  const [newStory, setNewStory] = useState({ title:"", genre:"fantasy", opening:"" });
+  const [selectedMembers, setSelectedMembers] = useState([]);
+  const [memberSearch, setMemberSearch] = useState("");
+  const [allUsers, setAllUsers] = useState([]);
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteSearch, setInviteSearch] = useState("");
+  const [pendingInvites, setPendingInvites] = useState([]);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginName, setLoginName] = useState("");
+  const [authMode, setAuthMode] = useState("login");
+  const [authError, setAuthError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [storiesLoading, setStoriesLoading] = useState(false);
+  const contribEndRef = useRef(null);
+
+  const showNotif = (msg) => { setNotification(msg); setTimeout(() => setNotification(""), 3000); };
+
+  // Auth state
+  useEffect(() => {
+    sb.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+      if (session) { setScreen("home"); loadAllData(session); }
+      else setLoading(false);
+    });
+    const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) { setScreen("home"); loadAllData(session); }
+      else { setScreen("login"); setLoading(false); }
+    });
+    // Timeout fallback - if loading takes more than 5 seconds show login
+    const timeout = setTimeout(() => { setLoading(false); }, 5000);
+    return () => { subscription.unsubscribe(); clearTimeout(timeout); };
+  }, []);
+
+  // Scroll to bottom on new contribution only
+  useEffect(() => {
+    if (contributions.length > 0) {
+      const timer = setTimeout(() => {
+        contribEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [contributions.length]);
+
+  const loadAllData = async (sess) => {
+    setStoriesLoading(true);
+    await loadAllUsers();
+    await loadPublicStories();
+    await loadGroupStories(sess);
+    await loadPendingInvites(sess);
+    setStoriesLoading(false);
+  };
+
+  const loadPublicStories = async () => {
+    const { data, error } = await sb.from("stories").select("*").eq("type","public").order("created_at", { ascending: false });
+    if (!error && data) setPublicStories(data);
+  };
+
+  const loadGroupStories = async (sess) => {
+    if (!sess) return;
+    try {
+      // Get all stories where user is a member
+      const { data: memberData } = await sb
+        .from("story_members")
+        .select("story_id")
+        .eq("user_id", sess.user.id);
+
+      // Get all stories where user is creator
+      const { data: creatorData } = await sb
+        .from("stories")
+        .select("*")
+        .eq("creator_id", sess.user.id)
+        .eq("type", "group")
+        .order("created_at", { ascending: false });
+
+      const memberIds = (memberData || []).map(d => d.story_id);
+
+      let memberStories = [];
+      if (memberIds.length > 0) {
+        const { data } = await sb
+          .from("stories")
+          .select("*")
+          .in("id", memberIds)
+          .order("created_at", { ascending: false });
+        memberStories = data || [];
+      }
+
+      // Combine and deduplicate
+      const allStories = [...(creatorData || []), ...memberStories];
+      const unique = allStories.filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i);
+      setGroupStories(unique);
+    } catch (e) {
+      console.error("loadGroupStories error:", e);
+    }
+  };
+
+  const loadContributions = async (storyId) => {
+    const { data, error } = await sb
+      .from("contributions")
+      .select("*, profiles(name, avatar_letter)")
+      .eq("story_id", storyId)
+      .eq("type", "user")
+      .order("created_at", { ascending: true });
+    if (!error && data) setContributions(data);
+  };
+
+  const loadAllUsers = async () => {
+    const { data, error } = await sb.from("profiles").select("*");
+    if (!error && data) setAllUsers(data);
+  };
+
+  const loadPendingInvites = async (sess) => {
+    if (!sess) return;
+    const { data, error } = await sb.from("story_invites").select("*, stories(title, creator_name)").eq("invitee_id", sess.user.id).eq("status","pending");
+    if (!error && data) setPendingInvites(data);
+  };
+
+  const loadStoryMembers = async (storyId) => {
+    const { data } = await sb.from("story_members").select("*, profiles(name, avatar_letter)").eq("story_id", storyId);
+    return data || [];
+  };
+
+  // Auth functions
+  const handleRegister = async () => {
+    if (!loginEmail || !loginPassword || !loginName) { setAuthError("ހުރިހާ ތަންތަން ފުރިހަމަ ކުރައްވާ"); return; }
+    if (loginPassword.length < 6) { setAuthError("ޕާސްވޯޑް 6 އަކުރަށް ވުރެ ދިގުވާން ޖެހޭ"); return; }
+    setAuthLoading(true); setAuthError("");
+    const { data, error } = await sb.auth.signUp({
+      email: loginEmail, password: loginPassword,
+      options: {
+        data: { name: loginName },
+        emailRedirectTo: window.location.origin
+      }
+    });
+    if (error) { setAuthError(error.message); setAuthLoading(false); return; }
+    if (data.user) {
+      await sb.from("profiles").upsert({ id: data.user.id, name: loginName, email: loginEmail, avatar_letter: loginName.charAt(0) });
+    }
+    setAuthLoading(false);
+    setAuthMode("verify");
+  };
+
+  const handleLogin = async () => {
+    if (!loginEmail || !loginPassword) { setAuthError("އީމެއިލް އަދި ޕާސްވޯޑް ލިޔުއްވާ"); return; }
+    setAuthLoading(true); setAuthError("");
+    const { data, error } = await sb.auth.signInWithPassword({ email: loginEmail, password: loginPassword });
+    if (error) { setAuthError("އީމެއިލް ނުވަތަ ޕާސްވޯޑް ގޯސް"); setAuthLoading(false); return; }
+    if (data.user) {
+      // Make sure profile exists
+      const { data: profile } = await sb.from("profiles").select("*").eq("id", data.user.id).single();
+      if (!profile) {
+        const name = data.user.user_metadata?.name || loginEmail.split("@")[0];
+        await sb.from("profiles").upsert({ id: data.user.id, name, email: loginEmail, avatar_letter: name.charAt(0) });
+      }
+    }
+    setAuthLoading(false);
+  };
+
+  const handleForgotPassword = async () => {
+    if (!loginEmail) { setAuthError("ފުރަތަމަ އީމެއިލް ލިޔުއްވާ"); return; }
+    setAuthLoading(true); setAuthError("");
+    const { error } = await sb.auth.resetPasswordForEmail(loginEmail, { redirectTo: "https://vaahakamaizan.com" });
+    if (error) { setAuthError(error.message); setAuthLoading(false); return; }
+    setAuthLoading(false);
+    setAuthError("");
+    setAuthMode("forgot_sent");
+  };
+    await sb.auth.signOut();
+    setScreen("login"); setSession(null);
+    setPublicStories([]); setGroupStories([]);
+  };
+
+  const handleAcceptInvite = async (invite) => {
+    // Add to story_members
+    await sb.from("story_members").upsert({ story_id: invite.story_id, user_id: session.user.id });
+    // Update invite status
+    await sb.from("story_invites").update({ status:"accepted" }).eq("id", invite.id);
+    // Remove from pending list
+    setPendingInvites(prev => prev.filter(i => i.id !== invite.id));
+    // Reload group stories
+    await loadGroupStories(session);
+    setActiveTab("group");
+    showNotif("ގްރޫޕް ވާހަކައަށް ބައިވެރިވެވިއްޖެ! 🎉");
+  };
+
+  const handleDeclineInvite = async (invite) => {
+    await sb.from("story_invites").update({ status:"declined" }).eq("id", invite.id);
+    setPendingInvites(prev => prev.filter(i => i.id !== invite.id));
+    showNotif("ދައުވަތު ދެކޮޅުކޮށްފިން.");
+  };
+
+  const openStory = async (story) => {
+    setSelectedStory(story);
+    setScreen("story");
+    await loadContributions(story.id);
+    if (story.type === "group") {
+      const members = await loadStoryMembers(story.id);
+      setSelectedStory(prev => ({ ...prev, members }));
+    }
+  };
+
+  const handleAddContribution = async () => {
+    if (!newContrib.trim() || !selectedStory) return;
+    const profile = allUsers.find(u => u.id === session.user.id);
+    const { data, error } = await sb.from("contributions").insert({
+      story_id: selectedStory.id, user_id: session.user.id,
+      text: newContrib, author_name: profile?.name || "ކިޔުންތެރިއެއް",
+      author_avatar: profile?.avatar_letter || "?", type: "user"
+    }).select().single();
+    if (!error && data) {
+      setContributions(prev => [...prev, data]);
+      setNewContrib("");
+      showNotif("ލިޔުން ލިބިއްޖެ! ✨");
+    }
+  };
+
+  const handleFinishStory = async () => {
+    await sb.from("stories").update({ finished: true }).eq("id", selectedStory.id);
+    setSelectedStory(prev => ({ ...prev, finished: true }));
+    if (selectedStory.type === "public") setPublicStories(prev => prev.map(s => s.id === selectedStory.id ? { ...s, finished: true } : s));
+    else setGroupStories(prev => prev.map(s => s.id === selectedStory.id ? { ...s, finished: true } : s));
+    showNotif("ވާހަކަ ނިންމާލެވިއްޖެ! 🎉");
+  };
+
+  const handleInviteMember = async (user) => {
+    if (!selectedStory) return;
+    const members = selectedStory.members || [];
+    if (members.some(m => m.user_id === user.id)) { showNotif("މި ފަރާތް ހިމެނިފައިވޭ."); return; }
+    if (members.length >= 10) { showNotif("10 މެންބަރުންގެ ލިމިޓް ފުރިއްޖެ!"); return; }
+    const profile = allUsers.find(u => u.id === session.user.id);
+    await sb.from("story_invites").insert({
+      story_id: selectedStory.id, invitee_id: user.id,
+      inviter_id: session.user.id, inviter_name: profile?.name, status: "pending"
+    });
+    showNotif(user.name + " އަށް ދައުވަތު ފޮނުވައިފިން!");
+    setShowInvite(false); setInviteSearch("");
+  };
+
+  const handleCreateStory = async () => {
+    if (!newStory.title || !newStory.opening) return;
+    const profile = allUsers.find(u => u.id === session.user.id);
+    const genre = GENRES.find(g => g.id === newStory.genre);
+    const coverColor = COVER_COLORS[Math.floor(Math.random() * COVER_COLORS.length)];
+    const { data: story, error } = await sb.from("stories").insert({
+      title: newStory.title, genre: newStory.genre,
+      cover_emoji: genre.emoji, cover_color: coverColor,
+      creator_id: session.user.id, creator_name: profile?.name,
+      creator_avatar: profile?.avatar_letter, type: createType, finished: false,
+    }).select().single();
+    if (error || !story) { showNotif("ކޮންމެވެސް ގޯހެއް ވިއްޖެ"); return; }
+
+    // Add user opening only - no narrator
+    await sb.from("contributions").insert({ story_id: story.id, user_id: session.user.id, type: "user", text: newStory.opening, author_name: profile?.name, author_avatar: profile?.avatar_letter });
+
+    if (createType === "group") {
+      // Add creator as member
+      await sb.from("story_members").insert({ story_id: story.id, user_id: session.user.id });
+      // Send invites to selected members
+      for (const userId of selectedMembers) {
+        await sb.from("story_invites").insert({ story_id: story.id, invitee_id: userId, inviter_id: session.user.id, inviter_name: profile?.name, status: "pending" });
+      }
+      await loadGroupStories(session);
+    } else {
+      await loadPublicStories();
+    }
+    setShowCreate(false);
+    setNewStory({ title:"", genre:"fantasy", opening:"" });
+    setSelectedMembers([]); setMemberSearch("");
+    setActiveTab(createType === "group" ? "group" : "public");
+    showNotif(createType === "group" ? "ގްރޫޕް ވާހަކަ ފަށައިފިން! 🎉" : "ވާހަކަ ޝާއިއުކޮށްފިން! 🎉");
+  };
+
+  const currentProfile = allUsers.find(u => u.id === session?.user?.id);
+  const inputStyle = { width:"100%", background:C.white, color:C.navy, borderRadius:"12px", padding:"12px 16px", border:`1.5px solid ${C.lightGray}`, outline:"none", fontSize:"14px", direction:"rtl" };
+
+  if (loading) return <LoadingScreen />;
+
+  // FORGOT PASSWORD SENT SCREEN
+  if (screen === "login" && authMode === "forgot_sent") return (
+    <div style={{minHeight:"100vh",background:`linear-gradient(160deg, ${C.teal} 0%, ${C.navy} 100%)`,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
+      <div style={{width:"100%",maxWidth:"420px"}}>
+        <div style={{background:C.white,borderRadius:"20px",padding:"28px",boxShadow:"0 20px 60px rgba(0,0,0,0.3)",textAlign:"center"}}>
+          <div style={{fontSize:"48px",marginBottom:"16px"}}>🔑</div>
+          <h2 style={{color:C.navy,fontSize:"20px",fontWeight:"800",margin:"0 0 12px"}}>ޕާސްވޯޑް ރީސެޓް ލިންކް ފޮނުވައިފިން</h2>
+          <p style={{color:C.gray,fontSize:"14px",lineHeight:"1.7",margin:"0 0 20px"}}>
+            <strong style={{color:C.navy}}>{loginEmail}</strong> އަށް ޕާސްވޯޑް ބަދަލު ކުރާ ލިންކެއް ފޮނުވައިފިން. އީމެއިލް ހުޅުވައި ލިންކަށް ފިތާލައްވާ.
+          </p>
+          <button onClick={() => { setAuthMode("login"); setAuthError(""); }} style={{width:"100%",background:`linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color:C.white,fontWeight:"700",padding:"13px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"14px"}}>
+            ← ލޮގިން ސަފްހާއަށް
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+  if (screen === "login" && authMode === "verify") return (
+    <div style={{minHeight:"100vh",background:`linear-gradient(160deg, ${C.teal} 0%, ${C.navy} 100%)`,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
+      <div style={{width:"100%",maxWidth:"420px"}}>
+        <div style={{textAlign:"center",marginBottom:"28px"}}>
+          <div style={{width:"80px",height:"80px",borderRadius:"50%",background:C.coral,margin:"0 auto 14px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"40px",boxShadow:"0 8px 24px rgba(255,87,87,0.4)"}}>📧</div>
+          <h1 style={{fontSize:"28px",fontWeight:"900",color:C.white,margin:"0 0 6px"}}>ވާހަކަ މައިޒާން</h1>
+        </div>
+        <div style={{background:C.white,borderRadius:"20px",padding:"28px",boxShadow:"0 20px 60px rgba(0,0,0,0.3)",textAlign:"center"}}>
+          <div style={{fontSize:"48px",marginBottom:"16px"}}>✉️</div>
+          <h2 style={{color:C.navy,fontSize:"20px",fontWeight:"800",margin:"0 0 12px"}}>އީމެއިލް ބައްލަވާލައްވާ</h2>
+          <p style={{color:C.gray,fontSize:"14px",lineHeight:"1.7",margin:"0 0 20px"}}>
+            <strong style={{color:C.navy}}>{loginEmail}</strong> އަށް ކޮންފާމޭޝަން ލިންކެއް ފޮނުވައިފިން. އީމެއިލް ހުޅުވައި ލިންކަށް ފިތާލައްވާ. ރަޖިސްޓްރޭޝަން ފުރިހަމަ ވާނީ ދެން.
+          </p>
+          <div style={{background:C.tealLight,borderRadius:"12px",padding:"14px",marginBottom:"20px"}}>
+            <p style={{color:C.tealDark,fontSize:"13px",margin:0,fontWeight:"600"}}>📌 އީމެއިލް ނުލިބިއްޖެ ނަމަ Spam ފޯލްޑަރ ބައްލަވާ</p>
+          </div>
+          <button onClick={() => setAuthMode("login")} style={{width:"100%",background:`linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color:C.white,fontWeight:"700",padding:"13px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"14px"}}>
+            ← ލޮގިން ސަފްހާއަށް
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // LOGIN / REGISTER
+  if (screen === "login") return (
+    <div style={{minHeight:"100vh",background:`linear-gradient(160deg, ${C.teal} 0%, ${C.navy} 100%)`,overflowY:"auto",padding:"20px 16px 40px"}}>
+      <div style={{width:"100%",maxWidth:"420px",margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:"20px",paddingTop:"20px"}}>
+          <div style={{width:"70px",height:"70px",borderRadius:"50%",background:C.coral,margin:"0 auto 12px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"34px",boxShadow:"0 8px 24px rgba(255,87,87,0.4)"}}>📖</div>
+          <h1 style={{fontSize:"26px",fontWeight:"900",color:C.white,margin:"0 0 4px"}}>ވާހަކަ މައިޒާން</h1>
+          <p style={{color:"rgba(255,255,255,0.7)",fontSize:"12px",margin:0}}>ދިވެހި ވާހަކަ ލިޔުމުގެ ހޮޅުއަށި</p>
+        </div>
+        <div style={{background:C.white,borderRadius:"20px",padding:"22px",boxShadow:"0 20px 60px rgba(0,0,0,0.3)"}}>
+          <div style={{display:"flex",background:C.cream,borderRadius:"12px",overflow:"hidden",marginBottom:"16px",padding:"3px",gap:"3px"}}>
+            <button onClick={() => { setAuthMode("login"); setAuthError(""); }} style={{flex:1,padding:"9px",fontSize:"13px",fontWeight:"700",background: authMode==="login" ? C.teal : "transparent",color: authMode==="login" ? C.white : C.gray,border:"none",cursor:"pointer",borderRadius:"10px"}}>ލޮގިން</button>
+            <button onClick={() => { setAuthMode("register"); setAuthError(""); }} style={{flex:1,padding:"9px",fontSize:"13px",fontWeight:"700",background: authMode==="register" ? C.coral : "transparent",color: authMode==="register" ? C.white : C.gray,border:"none",cursor:"pointer",borderRadius:"10px"}}>ރަޖިސްޓަރ</button>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
+            {authMode === "register" && (
+              <div>
+                <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"5px",fontWeight:"600"}}>ފުރިހަމަ ނަން</label>
+                <input value={loginName} onChange={e=>setLoginName(e.target.value)} placeholder="ނަން ލިޔުއްވާ" style={inputStyle} />
+              </div>
+            )}
+            <div>
+              <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"5px",fontWeight:"600"}}>އީމެއިލް</label>
+              <input value={loginEmail} onChange={e=>setLoginEmail(e.target.value)} placeholder="email@example.com" style={{...inputStyle,direction:"ltr"}} type="email" />
+            </div>
+            <div>
+              <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"5px",fontWeight:"600"}}>ޕާސްވޯޑް</label>
+              <input value={loginPassword} onChange={e=>setLoginPassword(e.target.value)} placeholder="••••••••" style={{...inputStyle,direction:"ltr"}} type="password" />
+            </div>
+            {authError && <p style={{color:C.coral,fontSize:"13px",margin:0,textAlign:"center",fontWeight:"600"}}>{authError}</p>}
+            <button onClick={authMode==="login" ? handleLogin : handleRegister} disabled={authLoading}
+              style={{width:"100%",background:`linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color:C.white,fontWeight:"700",padding:"13px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"14px",opacity:authLoading?0.7:1,boxShadow:`0 4px 16px rgba(13,158,158,0.4)`}}>
+              {authLoading ? "ތައްޔާރު ވަނީ..." : authMode==="login" ? "ލޮގިން ކުރައްވާ" : "ރަޖިސްޓަރ ކުރައްވާ"}
+            </button>
+            {authMode === "login" && (
+              <div style={{textAlign:"center",paddingTop:"10px",borderTop:`1px solid ${C.lightGray}`}}>
+                <p style={{color:C.gray,fontSize:"12px",margin:"0 0 8px"}}>ޕާސްވޯޑް ހަދާން ނެތިއްޖެ ނަމަ؟</p>
+                <button onClick={handleForgotPassword} disabled={authLoading}
+                  style={{background:`${C.teal}15`,border:`1.5px solid ${C.teal}`,color:C.teal,fontSize:"13px",cursor:"pointer",fontWeight:"700",padding:"10px 20px",borderRadius:"10px",width:"100%"}}>
+                  🔑 ޕާސްވޯޑް ރީސެޓް ކުރައްވާ
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // STORY DETAIL
+  if (screen === "story" && selectedStory) {
+    const genre = GENRES.find(g => g.id === selectedStory.genre);
+    const isCreator = session?.user?.id === selectedStory.creator_id;
+    const members = selectedStory.members || [];
+    const isMember = selectedStory.type === "group" ? members.some(m => m.user_id === session?.user?.id) : true;
+    const canInvite = selectedStory.type === "group" && isMember && members.length < 10;
+    const filteredInvite = allUsers.filter(u => u.id !== session?.user?.id && u.name?.includes(inviteSearch) && !members.some(m => m.user_id === u.id));
+
+    return (
+      <div style={{height:"100vh",display:"flex",flexDirection:"column",background:C.cream,overflow:"hidden"}}>
+        <Notif msg={notification} />
+        <div style={{background: selectedStory.cover_color || `linear-gradient(135deg, ${C.teal}, ${C.navy})`, padding:"10px 14px 16px",flexShrink:0}}>
+          <div style={{maxWidth:"640px",margin:"0 auto"}}>
+            <button onClick={() => { setScreen("home"); setShowInvite(false); loadAllData(session); }} style={{color:"rgba(255,255,255,0.85)",background:"rgba(255,255,255,0.15)",border:"none",cursor:"pointer",fontSize:"13px",marginBottom:"10px",display:"inline-flex",alignItems:"center",gap:"6px",padding:"6px 14px",borderRadius:"999px",fontWeight:"600"}}>← ކުރީގެ ސަފްހާއަށް</button>
+            <div style={{display:"flex",alignItems:"flex-start",gap:"16px"}}>
+              <div style={{{fontSize:"32px"}}}>{selectedStory.cover_emoji}</div>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"8px"}}>
+                  <Badge bg="rgba(255,255,255,0.25)">{genre?.emoji} {genre?.label}</Badge>
+                  {selectedStory.type === "group" && <Badge bg={C.amber} color={C.navy}>🔒 ގްރޫޕް</Badge>}
+                  {selectedStory.finished && <Badge bg={C.mint} color={C.navy}>✅ ނިމިފައި</Badge>}
+                </div>
+                <h1 style={{fontSize:"17px",fontWeight:"800",color:C.white,margin:"0 0 4px",lineHeight:"1.3"}}>{selectedStory.title}</h1>
+                <p style={{fontSize:"12px",color:"rgba(255,255,255,0.7)",margin:0}}>ފެށީ: {selectedStory.creator_name}</p>
+              </div>
+            </div>
+            {selectedStory.type === "group" && (
+              <div style={{marginTop:"8px",display:"flex",alignItems:"center",gap:"6px",flexWrap:"wrap"}}>
+                <span style={{fontSize:"10px",color:"rgba(255,255,255,0.6)",fontWeight:"600"}}>{members.length}/10</span>
+                {members.map((m,i) => (
+                  <div key={i} title={m.profiles?.name} style={{width:"24px",height:"24px",borderRadius:"50%",background:C.teal,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"11px",fontWeight:"bold",color:C.white,border:"2px solid rgba(255,255,255,0.3)"}}>
+                    {m.profiles?.avatar_letter || "?"}
+                    {m.user_id === selectedStory.creator_id && "👑"}
+                  </div>
+                ))}
+                {canInvite && <button onClick={() => setShowInvite(true)} style={{background:"rgba(255,255,255,0.2)",border:"1px dashed rgba(255,255,255,0.5)",borderRadius:"999px",padding:"2px 8px",cursor:"pointer",color:C.white,fontSize:"10px",fontWeight:"600"}}>+ ދައުވަތު</button>}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+          <div style={{maxWidth:"640px",margin:"0 auto",padding:"16px 16px 16px"}}>
+          {contributions.filter(c => c.type !== "narrator").map(c => (
+            <div key={c.id} style={{marginBottom:"14px"}}>
+              <div style={{display:"flex",gap:"10px",flexDirection: c.user_id === session?.user?.id ? "row-reverse" : "row"}}>
+                <Avatar letter={c.author_avatar || "?"} size={36} bg={c.user_id === session?.user?.id ? C.coral : C.teal} />
+                <div style={{maxWidth:"75%",display:"flex",flexDirection:"column",alignItems: c.user_id === session?.user?.id ? "flex-end" : "flex-start"}}>
+                  <span style={{fontSize:"11px",color:C.gray,marginBottom:"3px",fontWeight:"600"}}>{c.author_name} · {new Date(c.created_at).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})}</span>
+                  <div style={{borderRadius:"16px",padding:"12px 16px",fontSize:"14px",lineHeight:"1.7",background: c.user_id === session?.user?.id ? `linear-gradient(135deg, ${C.coral}, #ff7070)` : C.white,color: c.user_id === session?.user?.id ? C.white : C.navy,boxShadow: c.user_id === session?.user?.id ? `0 4px 16px rgba(255,87,87,0.3)` : "0 2px 8px rgba(10,37,51,0.08)",border: c.user_id === session?.user?.id ? "none" : `1.5px solid ${C.lightGray}`}}>{c.text}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+          {selectedStory.finished && (
+            <div style={{marginTop:"24px",background:`linear-gradient(135deg, ${C.mint}22, ${C.tealLight})`,border:`2px solid ${C.mint}`,borderRadius:"16px",padding:"24px",textAlign:"center"}}>
+              <div style={{fontSize:"36px",marginBottom:"8px"}}>🎉</div>
+              <p style={{color:C.tealDark,fontWeight:"700",margin:0,fontSize:"16px"}}>ވާހަކަ ނިންމާލެވިއްޖެ</p>
+            </div>
+          )}
+          <div ref={contribEndRef} style={{height:"8px"}} />
+          </div>
+        </div>
+
+        {!selectedStory.finished && isMember && (
+          <div style={{background:C.white,borderTop:`2px solid ${C.tealLight}`,padding:"12px 16px",boxShadow:"0 -4px 20px rgba(10,37,51,0.1)",flexShrink:0}}>
+            <div style={{maxWidth:"640px",margin:"0 auto"}}>
+              <textarea value={newContrib} onChange={e=>setNewContrib(e.target.value)} placeholder="ވާހަކަ ކުރިއަށް ގެންދަވާ..."
+                style={{...inputStyle,resize:"none",marginBottom:"10px",border:`1.5px solid ${C.teal}`}} rows={2} />
+              <div style={{display:"flex",gap:"8px"}}>
+                <button onClick={handleAddContribution} style={{flex:1,background:`linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color:C.white,fontWeight:"700",padding:"11px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"13px",boxShadow:`0 4px 12px rgba(13,158,158,0.35)`}}>✍️ ލިޔުއްވި ބައި ހުށަހަޅުއްވާ</button>
+                {isCreator && !selectedStory.finished && <button onClick={handleFinishStory} style={{background:`linear-gradient(to right, ${C.mint}, ${C.teal})`,color:C.navy,fontWeight:"700",padding:"11px 14px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"13px"}}>✅ ނިންމާ</button>}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showInvite && (
+          <div style={{position:"fixed",inset:0,background:"rgba(10,37,51,0.6)",zIndex:50,display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"16px"}}>
+            <div style={{background:C.white,borderRadius:"20px",padding:"24px",width:"100%",maxWidth:"512px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px"}}>
+                <button onClick={() => { setShowInvite(false); setInviteSearch(""); }} style={{background:C.cream,border:"none",color:C.navy,cursor:"pointer",width:"32px",height:"32px",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px"}}>✕</button>
+                <h3 style={{color:C.navy,fontWeight:"700",margin:0,fontSize:"16px"}}>މެންބަރަކު ދައުވަތު ދޭ</h3>
+              </div>
+              <p style={{color:C.gray,fontSize:"12px",textAlign:"center",margin:"0 0 12px"}}>{members.length}/10 · {10-members.length} ސްލޮޓް ބާކީ</p>
+              <input value={inviteSearch} onChange={e=>setInviteSearch(e.target.value)} placeholder="ނަން ހޯދާ..." style={{...inputStyle,marginBottom:"12px"}} />
+              <div style={{maxHeight:"200px",overflowY:"auto",display:"flex",flexDirection:"column",gap:"8px"}}>
+                {filteredInvite.length === 0 ? <p style={{color:C.gray,textAlign:"center",padding:"16px",fontSize:"14px"}}>ހޯދާ ނަމެއް ނެތް</p>
+                  : filteredInvite.map(u => (
+                  <div key={u.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:C.cream,borderRadius:"12px",padding:"12px 16px"}}>
+                    <button onClick={() => handleInviteMember(u)} style={{background:`linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color:C.white,fontSize:"12px",padding:"7px 14px",borderRadius:"8px",border:"none",cursor:"pointer",fontWeight:"700"}}>ދައުވަތު ދޭ</button>
+                    <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                      <span style={{fontSize:"14px",color:C.navy,fontWeight:"600"}}>{u.name}</span>
+                      <Avatar letter={u.avatar_letter} size={32} bg={C.teal} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // HOME
+  const filteredForCreate = allUsers.filter(u => u.id !== session?.user?.id && u.name?.includes(memberSearch));
+
+  return (
+    <div style={{minHeight:"100vh",background:C.cream}}>
+      <Notif msg={notification} />
+      <div style={{background:`linear-gradient(135deg, ${C.teal}, ${C.navy})`,padding:"14px 20px",position:"sticky",top:0,zIndex:40,boxShadow:"0 2px 16px rgba(10,37,51,0.2)"}}>
+        <div style={{maxWidth:"640px",margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+            <Avatar letter={currentProfile?.avatar_letter || "?"} size={38} bg={C.coral} />
+            <div>
+              <p style={{fontSize:"11px",color:"rgba(255,255,255,0.7)",margin:0,fontWeight:"600"}}>މަރުހަބާ</p>
+              <p style={{fontSize:"13px",fontWeight:"700",color:C.white,margin:0}}>{currentProfile?.name}</p>
+            </div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
+              <div style={{width:"32px",height:"32px",borderRadius:"50%",background:C.coral,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"18px"}}>📖</div>
+              <span style={{fontSize:"16px",fontWeight:"900",color:C.white}}>ވާހަކަ މައިޒާން</span>
+            </div>
+            <button onClick={() => loadAllData(session)} title="ރިފްރެޝް" style={{background:"rgba(255,255,255,0.2)",border:"none",color:C.white,fontSize:"16px",width:"32px",height:"32px",borderRadius:"50%",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"700"}}>↻</button>
+            <button onClick={handleLogout} style={{background:"rgba(255,255,255,0.15)",border:"none",color:C.white,fontSize:"11px",padding:"5px 10px",borderRadius:"8px",cursor:"pointer",fontWeight:"600"}}>ނިކުމެވަޑައިންނަވާ</button>
+          </div>
+        </div>
+      </div>
+
+      <div style={{maxWidth:"640px",margin:"0 auto",padding:"16px 16px 32px"}}>
+
+        {pendingInvites.length > 0 && (
+          <div style={{background:`linear-gradient(135deg, ${C.amber}22, ${C.amber}11)`,border:`2px solid ${C.amber}`,borderRadius:"16px",padding:"16px",marginBottom:"16px"}}>
+            <h3 style={{color:C.navy,fontWeight:"700",fontSize:"14px",margin:"0 0 12px"}}>🔔 ގްރޫޕް ވާހަކައިގެ ދައުވަތު</h3>
+            {pendingInvites.map(invite => (
+              <div key={invite.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:C.white,borderRadius:"12px",padding:"12px 16px",marginBottom:"6px"}}>
+                <div style={{display:"flex",gap:"8px"}}>
+                  <button onClick={() => handleDeclineInvite(invite)} style={{background:C.cream,color:C.gray,fontSize:"12px",padding:"7px 14px",borderRadius:"8px",border:`1.5px solid ${C.lightGray}`,cursor:"pointer",fontWeight:"700"}}>ދެކޮޅު</button>
+                  <button onClick={() => handleAcceptInvite(invite)} style={{background:`linear-gradient(to right, ${C.amber}, #ffcc33)`,color:C.navy,fontSize:"12px",padding:"7px 14px",borderRadius:"8px",border:"none",cursor:"pointer",fontWeight:"700"}}>ގަބޫލު ✓</button>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <p style={{color:C.navy,fontSize:"14px",fontWeight:"700",margin:0}}>{invite.stories?.title}</p>
+                  <p style={{color:C.gray,fontSize:"12px",margin:0}}>{invite.inviter_name} ގެ ގްރޫޕް ވާހަކަ</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}}>
+          <button onClick={() => { setShowCreate(true); setCreateType(activeTab); }}
+            style={{background: activeTab==="group" ? `linear-gradient(to right, ${C.coral}, ${C.amber})` : `linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color: activeTab==="group" ? C.navy : C.white,fontWeight:"700",padding:"10px 18px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"13px",boxShadow: activeTab==="group" ? `0 4px 12px rgba(255,87,87,0.3)` : `0 4px 12px rgba(13,158,158,0.3)`}}>
+            {activeTab==="group" ? "👥 ގްރޫޕް ވާހަކައެއް ފަށާ" : "✨ ވާހަކައެއް ފަށާ"}
+          </button>
+          <div style={{display:"flex",background:C.white,borderRadius:"12px",overflow:"hidden",boxShadow:"0 2px 8px rgba(10,37,51,0.1)",border:`1.5px solid ${C.lightGray}`}}>
+            <button onClick={() => setActiveTab("public")} style={{padding:"8px 14px",fontSize:"12px",fontWeight:"700",background: activeTab==="public" ? C.teal : "transparent",color: activeTab==="public" ? C.white : C.gray,border:"none",cursor:"pointer"}}>🌐 ޢާންމު</button>
+            <button onClick={() => setActiveTab("group")} style={{padding:"8px 14px",fontSize:"12px",fontWeight:"700",background: activeTab==="group" ? C.coral : "transparent",color: activeTab==="group" ? C.white : C.gray,border:"none",cursor:"pointer",position:"relative"}}>
+              🔒 ގްރޫޕް
+              {groupStories.length > 0 && <span style={{position:"absolute",top:"-4px",right:"-4px",width:"18px",height:"18px",background:C.coral,borderRadius:"50%",fontSize:"10px",display:"flex",alignItems:"center",justifyContent:"center",color:C.white,fontWeight:"700",border:`2px solid ${C.white}`}}>{groupStories.length}</span>}
+            </button>
+          </div>
+        </div>
+
+        {storiesLoading ? (
+          <div style={{display:"flex",justifyContent:"center",padding:"40px"}}><div className="spinner"></div></div>
+        ) : (
+          <div style={{display:"flex",flexDirection:"column",gap:"16px"}}>
+            {(activeTab === "public" ? publicStories : groupStories).map(story => {
+              const genre = GENRES.find(g => g.id === story.genre);
+              return (
+                <div key={story.id} onClick={() => openStory(story)} style={{background:C.white,borderRadius:"16px",overflow:"hidden",cursor:"pointer",boxShadow:"0 2px 12px rgba(10,37,51,0.08)",border:`1.5px solid ${activeTab==="group" ? "rgba(255,87,87,0.15)" : "transparent"}`}}>
+                  <div style={{background: story.cover_color || `linear-gradient(135deg, ${C.teal}, ${C.navy})`, padding:"20px",display:"flex",alignItems:"center",gap:"16px"}}>
+                    <div style={{fontSize:"44px"}}>{story.cover_emoji}</div>
+                    <div style={{flex:1}}>
+                      <div style={{display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"6px"}}>
+                        {story.type==="group" && <Badge bg={C.amber} color={C.navy}>🔒 ގްރޫޕް</Badge>}
+                        <Badge bg="rgba(255,255,255,0.25)">{genre?.label}</Badge>
+                        {story.finished && <Badge bg={C.mint} color={C.navy}>ނިމިފައި</Badge>}
+                      </div>
+                      <h3 style={{color:C.white,fontWeight:"800",fontSize:"17px",margin:"0 0 3px"}}>{story.title}</h3>
+                      <p style={{color:"rgba(255,255,255,0.7)",fontSize:"12px",margin:0}}>ފެށީ {story.creator_name}</p>
+                    </div>
+                  </div>
+                  <div style={{padding:"14px 20px"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                      <span style={{fontSize:"12px",color:C.gray,fontWeight:"600"}}>❤️ {story.likes || 0}</span>
+                      {!story.finished && <span style={{fontSize:"12px",background: story.type==="group" ? "rgba(255,87,87,0.1)" : C.tealLight,color: story.type==="group" ? C.coral : C.tealDark,padding:"4px 12px",borderRadius:"999px",fontWeight:"700"}}>ވާހަކައަށް ބައެއް އިތުރުކުރެއްވުމަށް</span>}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            {(activeTab === "public" ? publicStories : groupStories).length === 0 && (
+              <div style={{textAlign:"center",padding:"64px 0",background:C.white,borderRadius:"16px"}}>
+                <div style={{{fontSize:"32px"},marginBottom:"16px"}}>{activeTab==="group" ? "👥" : "📖"}</div>
+                <p style={{color:C.navy,fontWeight:"700",fontSize:"16px",margin:"0 0 6px"}}>{activeTab==="group" ? "ގްރޫޕް ވާހަކައެއް ނެތް" : "ވާހަކައެއް ނެތް"}</p>
+                <p style={{color:C.gray,fontSize:"14px",margin:0}}>{activeTab==="group" ? "ރަހުމަތްތެރިންނާ އެކު ވާހަކައެއް ފަށާ" : "ފުރަތަމަ ވާހަކަ ފަށާ!"}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {showCreate && (
+        <div style={{position:"fixed",inset:0,background:"rgba(10,37,51,0.6)",zIndex:50,display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"16px"}}>
+          <div style={{background:C.white,borderRadius:"20px 20px 16px 16px",padding:"24px",width:"100%",maxWidth:"512px",boxShadow:"0 -8px 40px rgba(0,0,0,0.2)",maxHeight:"90vh",overflowY:"auto"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}}>
+              <button onClick={() => { setShowCreate(false); setSelectedMembers([]); setMemberSearch(""); }} style={{background:C.cream,border:"none",color:C.navy,cursor:"pointer",width:"32px",height:"32px",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"700"}}>✕</button>
+              <h3 style={{color:C.navy,fontWeight:"800",fontSize:"17px",margin:0}}>ވާހަކައެއް ފަށާ</h3>
+            </div>
+            <div style={{display:"flex",background:C.cream,borderRadius:"12px",overflow:"hidden",marginBottom:"20px",padding:"4px",gap:"4px"}}>
+              <button onClick={() => setCreateType("public")} style={{flex:1,padding:"9px",fontSize:"13px",fontWeight:"700",background: createType==="public" ? C.teal : "transparent",color: createType==="public" ? C.white : C.gray,border:"none",cursor:"pointer",borderRadius:"9px"}}>🌐 ޢާންމު</button>
+              <button onClick={() => setCreateType("group")} style={{flex:1,padding:"9px",fontSize:"13px",fontWeight:"700",background: createType==="group" ? C.coral : "transparent",color: createType==="group" ? C.white : C.gray,border:"none",cursor:"pointer",borderRadius:"9px"}}>🔒 ގްރޫޕް</button>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:"16px"}}>
+              <div>
+                <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"6px",fontWeight:"700"}}>ވާހަކައިގެ ނަން</label>
+                <input value={newStory.title} onChange={e=>setNewStory({...newStory,title:e.target.value})} placeholder="ވާހަކައަށް ނަމެއް ދެއްވާ" style={inputStyle} />
+              </div>
+              <div>
+                <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"8px",fontWeight:"700"}}>ޖޯންރާ</label>
+                <div style={{display:"flex",flexWrap:"wrap",gap:"8px"}}>
+                  {GENRES.map(g => <button key={g.id} onClick={() => setNewStory({...newStory,genre:g.id})} style={{padding:"7px 14px",borderRadius:"999px",fontSize:"13px",fontWeight:"600",background: newStory.genre===g.id ? C.teal : C.cream,color: newStory.genre===g.id ? C.white : C.navy,border: newStory.genre===g.id ? "none" : `1.5px solid ${C.lightGray}`,cursor:"pointer"}}>{g.emoji} {g.label}</button>)}
+                </div>
+              </div>
+              <div>
+                <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"6px",fontWeight:"700"}}>ވާހަކައިގެ ފެށުން</label>
+                <textarea value={newStory.opening} onChange={e=>setNewStory({...newStory,opening:e.target.value})} placeholder="ވާހަކަ ފެއްޓެވުމަށް ދެތިން ފޮޅުވަތް ލިޔުއްވާ..."
+                  style={{...inputStyle,resize:"none"}} rows={4} />
+              </div>
+              {createType === "group" && (
+                <div>
+                  <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"6px",fontWeight:"700"}}>
+                    މި ގްރޫޕްގެ ބައިވެރިންނަށް ދައުވަތު ދެއްވުމަށް <span style={{color:C.gray}}>({selectedMembers.length}/9)</span>
+                  </label>
+                  <input value={memberSearch} onChange={e=>setMemberSearch(e.target.value)} placeholder="ނަން ހޯދާ..." style={{...inputStyle,marginBottom:"8px"}} />
+                  <div style={{maxHeight:"160px",overflowY:"auto",display:"flex",flexDirection:"column",gap:"6px"}}>
+                    {filteredForCreate.map(u => {
+                      const sel = selectedMembers.includes(u.id);
+                      return (
+                        <div key={u.id} onClick={() => { if(sel) setSelectedMembers(p=>p.filter(id=>id!==u.id)); else if(selectedMembers.length<9) setSelectedMembers(p=>[...p,u.id]); }}
+                          style={{display:"flex",alignItems:"center",justifyContent:"space-between",borderRadius:"12px",padding:"10px 14px",cursor:"pointer",background: sel ? `${C.teal}15` : C.cream,border: sel ? `1.5px solid ${C.teal}` : `1.5px solid transparent`}}>
+                          <div style={{width:"22px",height:"22px",borderRadius:"50%",border: sel ? `2px solid ${C.teal}` : `2px solid ${C.lightGray}`,background: sel ? C.teal : "transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                            {sel && <span style={{fontSize:"11px",color:C.white,fontWeight:"700"}}>✓</span>}
+                          </div>
+                          <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                            <span style={{fontSize:"14px",color:C.navy,fontWeight:"600"}}>{u.name}</span>
+                            <Avatar letter={u.avatar_letter} size={30} bg={C.teal} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {selectedMembers.length > 0 && (
+                    <div style={{marginTop:"8px",display:"flex",flexWrap:"wrap",gap:"6px"}}>
+                      {selectedMembers.map(id => {
+                        const u = allUsers.find(u => u.id === id);
+                        return u ? (
+                          <span key={id} style={{background:`${C.teal}15`,color:C.tealDark,fontSize:"12px",padding:"4px 10px",borderRadius:"999px",display:"flex",alignItems:"center",gap:"4px",border:`1px solid ${C.teal}`,fontWeight:"600"}}>
+                            {u.name}
+                            <button onClick={() => setSelectedMembers(p=>p.filter(i=>i!==id))} style={{background:"none",border:"none",color:C.teal,cursor:"pointer",padding:0,fontSize:"16px",lineHeight:1}}>×</button>
+                          </span>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+              <button onClick={handleCreateStory}
+                style={{width:"100%",background: createType==="group" ? `linear-gradient(to right, ${C.coral}, ${C.amber})` : `linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color: createType==="group" ? C.navy : C.white,fontWeight:"700",padding:"13px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"14px"}}>
+                {createType==="group" ? "👥 ލިޔުއްވި ބައި ހުށަހަޅުއްވާ" : "🚀 ލިޔުއްވި ބައި ހުށަހަޅުއްވާ"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
