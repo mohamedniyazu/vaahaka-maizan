@@ -490,7 +490,7 @@ function App() {
           <div style={{maxWidth:"640px",margin:"0 auto"}}>
             <button onClick={() => { setScreen("home"); setShowInvite(false); loadAllData(session); }} style={{color:"rgba(255,255,255,0.85)",background:"rgba(255,255,255,0.15)",border:"none",cursor:"pointer",fontSize:"13px",marginBottom:"10px",display:"inline-flex",alignItems:"center",gap:"6px",padding:"6px 14px",borderRadius:"999px",fontWeight:"600"}}>← ކުރީގެ ސަފްހާއަށް</button>
             <div style={{display:"flex",alignItems:"flex-start",gap:"16px"}}>
-              <div style={{{fontSize:"32px"}}}>{selectedStory.cover_emoji}</div>
+              <div style={{fontSize:"32px"}}>{selectedStory.cover_emoji}</div>
               <div style={{flex:1}}>
                 <div style={{display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"8px"}}>
                   <Badge bg="rgba(255,255,255,0.25)">{genre?.emoji} {genre?.label}</Badge>
@@ -671,7 +671,7 @@ function App() {
             })}
             {(activeTab === "public" ? publicStories : groupStories).length === 0 && (
               <div style={{textAlign:"center",padding:"64px 0",background:C.white,borderRadius:"16px"}}>
-                <div style={{{fontSize:"32px"},marginBottom:"16px"}}>{activeTab==="group" ? "👥" : "📖"}</div>
+                <div style={{fontSize:"32px",marginBottom:"16px"}}>{activeTab==="group" ? "👥" : "📖"}</div>
                 <p style={{color:C.navy,fontWeight:"700",fontSize:"16px",margin:"0 0 6px"}}>{activeTab==="group" ? "ގްރޫޕް ވާހަކައެއް ނެތް" : "ވާހަކައެއް ނެތް"}</p>
                 <p style={{color:C.gray,fontSize:"14px",margin:0}}>{activeTab==="group" ? "ރަހުމަތްތެރިންނާ އެކު ވާހަކައެއް ފަށާ" : "ފުރަތަމަ ވާހަކަ ފަށާ!"}</p>
               </div>
