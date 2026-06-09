@@ -273,6 +273,7 @@ function App() {
     setAuthError("");
     setAuthMode("forgot_sent");
   };
+    const handleLogout = async () => {
     await sb.auth.signOut();
     setScreen("login"); setSession(null);
     setPublicStories([]); setGroupStories([]);
