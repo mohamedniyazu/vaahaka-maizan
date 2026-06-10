@@ -44,6 +44,7 @@ const sb = createClient(
   'https://bohpxaxsvxxwzjasssdc.supabase.co',
   'sb_publishable_kHmUmzpxt7IO19SKu3XJPQ_Zbc01EH3'
 );
+  const ADMIN_IDS = ["67f23ad4-7232-4186-9930-b8bae39e41ce"];
 
 const C = {
   cream:"#F0EDE8", coral:"#FF5757", teal:"#0D9E9E", tealDark:"#0A7A7A",
@@ -380,6 +381,25 @@ function App() {
   };
 
   const currentProfile = allUsers.find(u => u.id === session?.user?.id);
+  const isAdmin = ADMIN_IDS.includes(session?.user?.id);
+
+  const handleDeleteStory = async (story) => {
+    if (!window.confirm("Delete this whole story and all its posts?")) return;
+    await sb.from("contributions").delete().eq("story_id", story.id);
+    await sb.from("story_members").delete().eq("story_id", story.id);
+    await sb.from("story_invites").delete().eq("story_id", story.id);
+    await sb.from("stories").delete().eq("id", story.id);
+    setPublicStories(prev => prev.filter(s => s.id !== story.id));
+    setGroupStories(prev => prev.filter(s => s.id !== story.id));
+    if (selectedStory && selectedStory.id === story.id) setScreen("home");
+    showNotif("Story deleted");
+  };
+
+  const handleDeleteContribution = async (contrib) => {
+    if (!window.confirm("Delete this post?")) return;
+    await sb.from("contributions").delete().eq("id", contrib.id);
+    setContributions(prev => prev.filter(c => c.id !== contrib.id));
+  };
   const inputStyle = { width:"100%", background:C.white, color:C.navy, borderRadius:"12px", padding:"12px 16px", border:`1.5px solid ${C.lightGray}`, outline:"none", fontSize:"14px", direction:"rtl" };
 
   if (loading) return <LoadingScreen />;
