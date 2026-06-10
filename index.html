@@ -544,7 +544,7 @@ function App() {
                 <Avatar letter={c.author_avatar || "?"} size={36} bg={c.user_id === session?.user?.id ? C.coral : C.teal} />
                 <div style={{maxWidth:"75%",display:"flex",flexDirection:"column",alignItems: c.user_id === session?.user?.id ? "flex-end" : "flex-start"}}>
                   <span style={{fontSize:"11px",color:C.gray,marginBottom:"3px",fontWeight:"600"}}>{c.author_name} · {new Date(c.created_at).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})}</span>
-                  <div style={{borderRadius:"16px",padding:"12px 16px",fontSize:"14px",lineHeight:"1.7",background: c.user_id === session?.user?.id ? `linear-gradient(135deg, ${C.coral}, #ff7070)` : C.white,color: c.user_id === session?.user?.id ? C.white : C.navy,boxShadow: c.user_id === session?.user?.id ? `0 4px 16px rgba(255,87,87,0.3)` : "0 2px 8px rgba(10,37,51,0.08)",border: c.user_id === session?.user?.id ? "none" : `1.5px solid ${C.lightGray}`}}>{c.text}</div>
+                  <div style={{borderRadius:"16px",padding:"12px 16px",fontSize:"14px",lineHeight:"1.7",background: c.user_id === session?.user?.id ? `linear-gradient(135deg, ${C.coral}, #ff7070)` : C.white,color: c.user_id === session?.user?.id ? C.white : C.navy,boxShadow: c.user_id === session?.user?.id ? `0 4px 16px rgba(255,87,87,0.3)` : "0 2px 8px rgba(10,37,51,0.08)",border: c.user_id === session?.user?.id ? "none" : `1.5px solid ${C.lightGray}`}}>{c.text}</div>{isAdmin && <button onClick={() => handleDeleteContribution(c)} style={{marginTop:"4px",background:"none",border:"none",color:"#FF5757",cursor:"pointer",fontSize:"16px",padding:"2px"}}>🗑️</button>}
                 </div>
               </div>
             </div>
@@ -682,7 +682,7 @@ function App() {
                   </div>
                   <div style={{padding:"14px 20px"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                      <span style={{fontSize:"12px",color:C.gray,fontWeight:"600"}}>❤️ {story.likes || 0}</span>
+                      <span style={{fontSize:"12px",color:C.gray,fontWeight:"600"}}>❤️ {story.likes || 0}</span>{isAdmin && <button onClick={(e) => { e.stopPropagation(); handleDeleteStory(story); }} style={{background:"none",border:"1.5px solid #FF5757",color:"#FF5757",cursor:"pointer",fontSize:"14px",padding:"3px 10px",borderRadius:"999px"}}>🗑️</button>}
                       {!story.finished && <span style={{fontSize:"12px",background: story.type==="group" ? "rgba(255,87,87,0.1)" : C.tealLight,color: story.type==="group" ? C.coral : C.tealDark,padding:"4px 12px",borderRadius:"999px",fontWeight:"700"}}>ވާހަކައަށް ބައެއް އިތުރުކުރެއްވުމަށް</span>}
                     </div>
                   </div>
