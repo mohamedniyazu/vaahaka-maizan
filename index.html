@@ -572,6 +572,13 @@ function App() {
           </div>
         )}
 
+        {!selectedStory.finished && !session && (
+  <div style={{background:C.white,borderTop:"2px solid #E8F7F7",padding:"14px 16px",boxShadow:"0 -4px 20px rgba(10,37,51,0.1)",flexShrink:0}}>
+    <div style={{maxWidth:"640px",margin:"0 auto"}}>
+      <button onClick={() => setScreen("login")} style={{width:"100%",background:"linear-gradient(to right, #0D9E9E, #0A7A7A)",color:C.white,fontWeight:"700",padding:"12px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"13px"}}>ވާހަކައަށް ބައެއް އިތުރުކުރުމަށް ލޮގިންކުރައްވާ</button>
+    </div>
+  </div>
+)}
         {showInvite && (
           <div style={{position:"fixed",inset:0,background:"rgba(10,37,51,0.6)",zIndex:50,display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"16px"}}>
             <div style={{background:C.white,borderRadius:"20px",padding:"24px",width:"100%",maxWidth:"512px"}}>
