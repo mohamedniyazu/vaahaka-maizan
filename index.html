@@ -608,7 +608,7 @@ function App() {
       <Notif msg={notification} />
       <div style={{background:`linear-gradient(135deg, ${C.teal}, ${C.navy})`,padding:"14px 20px",position:"sticky",top:0,zIndex:40,boxShadow:"0 2px 16px rgba(10,37,51,0.2)"}}>
         <div style={{maxWidth:"640px",margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+          <div style={{display: session ? "flex" : "none",alignItems:"center",gap:"10px"}}>
             <Avatar letter={currentProfile?.avatar_letter || "?"} size={38} bg={C.coral} />
             <div>
               <p style={{fontSize:"11px",color:"rgba(255,255,255,0.7)",margin:0,fontWeight:"600"}}>މަރުހަބާ</p>
@@ -621,7 +621,8 @@ function App() {
               <span style={{fontSize:"16px",fontWeight:"900",color:C.white}}>ވާހަކަ މައިޒާން</span>
             </div>
             <button onClick={() => loadAllData(session)} title="ރިފްރެޝް" style={{background:"rgba(255,255,255,0.2)",border:"none",color:C.white,fontSize:"16px",width:"32px",height:"32px",borderRadius:"50%",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"700"}}>↻</button>
-            <button onClick={handleLogout} style={{background:"rgba(255,255,255,0.15)",border:"none",color:C.white,fontSize:"11px",padding:"5px 10px",borderRadius:"8px",cursor:"pointer",fontWeight:"600"}}>ނިކުމެވަޑައިންނަވާ</button>
+            {session && <button onClick={handleLogout} style={{background:"rgba(255,255,255,0.15)",border:"none",color:C.white,fontSize:"11px",padding:"5px 10px",borderRadius:"8px",cursor:"pointer",fontWeight:"600"}}>ނިކުމެވަޑައިންނަވާ</button>}
+            {!session && <button onClick={() => setScreen("login")} style={{background:"rgba(255,255,255,0.15)",border:"none",color:C.white,fontSize:"11px",padding:"5px 10px",borderRadius:"8px",cursor:"pointer",fontWeight:"600"}}>ލޮގިން / ރަޖިސްޓަރ</button>}
           </div>
         </div>
       </div>
