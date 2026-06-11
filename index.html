@@ -389,6 +389,19 @@ function App() {
 
   const currentProfile = allUsers.find(u => u.id === session?.user?.id);
   const isAdmin = ADMIN_IDS.includes(session?.user?.id);
+  const likeCount = (storyId) => allLikes.filter(l => l.story_id === storyId).length;
+  const myLiked = (storyId) => allLikes.some(l => l.story_id === storyId && l.user_id === session?.user?.id);
+  const handleLike = async (story) => {
+    if (!session) { setScreen("login"); return; }
+    const uid = session.user.id;
+    if (myLiked(story.id)) {
+      await sb.from("story_likes").delete().eq("story_id", story.id).eq("user_id", uid);
+      setAllLikes(prev => prev.filter(l => !(l.story_id === story.id && l.user_id === uid)));
+    } else {
+      await sb.from("story_likes").insert({ story_id: story.id, user_id: uid });
+      setAllLikes(prev => [...prev, { story_id: story.id, user_id: uid }]);
+    }
+  };
 
   const handleDeleteStory = async (story) => {
     if (!window.confirm("Delete this whole story and all its posts?")) return;
@@ -697,7 +710,7 @@ function App() {
                   </div>
                   <div style={{padding:"14px 20px"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                      <span style={{fontSize:"12px",color:C.gray,fontWeight:"600"}}>❤️ {story.likes || 0}</span>{isAdmin && <button onClick={(e) => { e.stopPropagation(); handleDeleteStory(story); }} style={{background:"none",border:"1.5px solid #FF5757",color:"#FF5757",cursor:"pointer",fontSize:"14px",padding:"3px 10px",borderRadius:"999px"}}>🗑️</button>}
+                      <button onClick={(e) => { e.stopPropagation(); handleLike(story); }} style={{background:"none",border:"none",cursor:"pointer",fontSize:"12px",color:C.gray,fontWeight:"600",display:"flex",alignItems:"center",gap:"4px",padding:0}}><span style={{filter: myLiked(story.id) ? "none" : "grayscale(1)",opacity: myLiked(story.id) ? 1 : 0.55}}>❤️</span>{likeCount(story.id)}</button>{isAdmin && <button onClick={(e) => { e.stopPropagation(); handleDeleteStory(story); }} style={{background:"none",border:"1.5px solid #FF5757",color:"#FF5757",cursor:"pointer",fontSize:"14px",padding:"3px 10px",borderRadius:"999px"}}>🗑️</button>}
                       {!story.finished && <span style={{fontSize:"12px",background: story.type==="group" ? "rgba(255,87,87,0.1)" : C.tealLight,color: story.type==="group" ? C.coral : C.tealDark,padding:"4px 12px",borderRadius:"999px",fontWeight:"700"}}>ވާހަކައަށް ބައެއް އިތުރުކުރެއްވުމަށް</span>}
                     </div>
                   </div>
