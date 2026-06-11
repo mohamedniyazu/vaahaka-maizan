@@ -120,6 +120,7 @@ function App() {
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [storiesLoading, setStoriesLoading] = useState(false);
+  const [allLikes, setAllLikes] = useState([]);
   const contribEndRef = useRef(null);
 
   const showNotif = (msg) => { setNotification(msg); setTimeout(() => setNotification(""), 3000); };
@@ -161,9 +162,14 @@ function App() {
     setStoriesLoading(false);
   };
 
+  const loadLikes = async () => {
+  const { data } = await sb.from("story_likes").select("story_id, user_id");
+  if (data) setAllLikes(data);
+};
   const loadPublicStories = async () => {
     const { data, error } = await sb.from("stories").select("*").eq("type","public").order("created_at", { ascending: false });
     if (!error && data) setPublicStories(data);
+    loadLikes();
   };
 
   const loadGroupStories = async (sess) => {
