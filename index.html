@@ -129,12 +129,12 @@ function App() {
       setSession(session);
       setLoading(false);
       if (session) { setScreen("home"); loadAllData(session); }
-      else setLoading(false);
+      else { setScreen("home"); loadPublicStories(); }
     });
     const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) { setScreen("home"); loadAllData(session); }
-      else { setScreen("login"); setLoading(false); }
+      else { setScreen("home"); loadPublicStories(); setLoading(false); }
     });
     // Timeout fallback - if loading takes more than 5 seconds show login
     const timeout = setTimeout(() => { setLoading(false); }, 5000);
