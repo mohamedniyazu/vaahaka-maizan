@@ -559,7 +559,7 @@ function App() {
           </div>
         </div>
 
-        {!selectedStory.finished && isMember && (
+        {!selectedStory.finished && isMember && session && (
           <div style={{background:C.white,borderTop:`2px solid ${C.tealLight}`,padding:"12px 16px",boxShadow:"0 -4px 20px rgba(10,37,51,0.1)",flexShrink:0}}>
             <div style={{maxWidth:"640px",margin:"0 auto"}}>
               <textarea value={newContrib} onChange={e=>setNewContrib(e.target.value)} placeholder="ވާހަކަ ކުރިއަށް ގެންދަވާ..."
