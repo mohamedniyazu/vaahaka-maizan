@@ -54,11 +54,11 @@ const C = {
 };
 
 const GENRES = [
-  { id:"fantasy", label:"ފެންޓަސީ", emoji:"🌙" },
-  { id:"romance", label:"ލޯބި", emoji:"💖" },
-  { id:"mystery", label:"މިސްޓްރީ", emoji:"🔍" },
-  { id:"horror", label:"ބިރުވެރި", emoji:"👻" },
-  { id:"adventure", label:"އެޑްވެންޗަރ", emoji:"🏝️" },
+  { id:"fantasy", label:"ފެންޓަސީ", en:"Fantasy", emoji:"🌙" },
+  { id:"romance", label:"ލޯބި", en:"Romance", emoji:"💖" },
+  { id:"mystery", label:"މިސްޓްރީ", en:"Mystery", emoji:"🔍" },
+  { id:"horror", label:"ބިރުވެރި", en:"Horror", emoji:"👻" },
+  { id:"adventure", label:"އެޑްވެންޗަރ", en:"Adventure", emoji:"🏝️" },
 ];
 
 const COVER_COLORS = [
@@ -140,7 +140,7 @@ useEffect(() => { document.documentElement.dir = lang === "dv" ? "rtl" : "ltr"; 
     forgotQ: { dv: "ޕާސްވޯޑް ހަނދާން ނެތިއްޖެނަމަ؟", en: "Forgot your password?" },
     resetPw: { dv: "ޕާސްވޯޑް ރީސެޓް ކުރައްވާ", en: "Reset password" },
     welcome: { dv: "މަރުހަބާ", en: "Welcome" },
-    logout: { dv: "ވަޑައިގެން ނިކުމެވަޑައި", en: "Log out" },
+    logout: { dv: "ނިކުމެވަޑައިންނަވާ", en: "Log out" },
     loginRegister: { dv: "ލޮގިން / ރަޖިސްޓަރ", en: "Login / Register" },
 email: { dv: "އީމެއިލް", en: "Email" },
 pleaseWait: { dv: "ތައްޔާރު ވަނީ...", en: "Please wait..." },
@@ -157,8 +157,25 @@ checkEmail: { dv: "އީމެއިލް ބައްލަވާލައްވާ", en: "Check yo
 verifyPre: { dv: "", en: "We have sent a confirmation link to" },
 verifyPost: { dv: " އަށް ކޮންފާމޭޝަން ލިންކެއް ފޮނުވައިފިން. އީމެއިލް ހުޅުވައި ލިންކަށް ފިތާލައްވާ. ރަޖިސްޓްރޭޝަން ފުރިހަމަ ވާނީ ދެން.", en: ". Open the email and tap the link to finish registering." },
 spamHint: { dv: "އީމެއިލް ނުލިބިއްޖެ ނަމަ Spam ފޯލްޑަރ ބައްލަވާ", en: "No email? Please check your Spam folder" },
+refresh: { dv: "ރިފްރެޝް", en: "Refresh" },
+groupInvites: { dv: "ގްރޫޕް ވާހަކައިގެ ދައުވަތު", en: "Group story invitations" },
+decline: { dv: "ދެކޮޅު", en: "Decline" },
+accept: { dv: "ގަބޫލު ✓", en: "Accept ✓" },
+invitedByPre: { dv: "", en: "Group story by " },
+invitedByPost: { dv: " ގެ ގްރޫޕް ވާހަކަ", en: "" },
+startStory: { dv: "ވާހަކައެއް ފަށާ", en: "Start a story" },
+startGroupStory: { dv: "ގްރޫޕް ވާހަކައެއް ފަށާ", en: "Start a group story" },
+publicTab: { dv: "ޢާންމު", en: "Public" },
+groupTab: { dv: "ގްރޫޕް", en: "Group" },
+finished: { dv: "ނިމިފައި", en: "Finished" },
+startedBy: { dv: "ފެށީ", en: "Started by" },
+addToStory: { dv: "ވާހަކައަށް ބައެއް އިތުރުކުރެއްވުމަށް", en: "Add to this story" },
+noStories: { dv: "ވާހަކައެއް ނެތް", en: "No stories yet" },
+noGroupStories: { dv: "ގްރޫޕް ވާހަކައެއް ނެތް", en: "No group stories yet" },
+beFirst: { dv: "ފުރަތަމަ ވާހަކަ ފަށާ!", en: "Write the first story!" },
+startWithFriends: { dv: "ރަހުމަތްތެރިންނާ އެކު ވާހަކައެއް ފަށާ", en: "Start a story with your friends" },
   };
-  const t = (key) => (TEXT[key] ? (TEXT[key][lang] || TEXT[key].dv) : key);
+  const t = (key) => (TEXT[key] ? (TEXT[key][lang] ?? TEXT[key].dv) : key);
   const showNotif = (msg) => { setNotification(msg); setTimeout(() => setNotification(""), 3000); };
 
   // Auth state
@@ -570,12 +587,12 @@ spamHint: { dv: "އީމެއިލް ނުލިބިއްޖެ ނަމަ Spam ފޯލްޑ�
               <div style={{fontSize:"32px"}}>{selectedStory.cover_emoji}</div>
               <div style={{flex:1}}>
                 <div style={{display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"8px"}}>
-                  <Badge bg="rgba(255,255,255,0.25)">{genre?.emoji} {genre?.label}</Badge>
-                  {selectedStory.type === "group" && <Badge bg={C.amber} color={C.navy}>🔒 ގްރޫޕް</Badge>}
-                  {selectedStory.finished && <Badge bg={C.mint} color={C.navy}>✅ ނިމިފައި</Badge>}
+                  <Badge bg="rgba(255,255,255,0.25)">{genre?.emoji} {lang === "en" ? genre?.en : genre?.label}</Badge>
+                  {selectedStory.type === "group" && <Badge bg={C.amber} color={C.navy}>🔒 {t("groupTab")}</Badge>}
+                  {selectedStory.finished && <Badge bg={C.mint} color={C.navy}>✅ {t("finished")}</Badge>}
                 </div>
                 <h1 style={{fontSize:"17px",fontWeight:"800",color:C.white,margin:"0 0 4px",lineHeight:"1.3"}}>{selectedStory.title}</h1>
-                <p style={{fontSize:"12px",color:"rgba(255,255,255,0.7)",margin:0}}>ފެށީ: {selectedStory.creator_name}</p>
+                <p style={{fontSize:"12px",color:"rgba(255,255,255,0.7)",margin:0}}>{t("startedBy")}: {selectedStory.creator_name}</p>
               </div>
             </div>
             {selectedStory.type === "group" && (
@@ -675,19 +692,19 @@ spamHint: { dv: "އީމެއިލް ނުލިބިއްޖެ ނަމަ Spam ފޯލްޑ�
           <div style={{display: session ? "flex" : "none",alignItems:"center",gap:"10px"}}>
             <Avatar letter={currentProfile?.avatar_letter || "?"} size={38} bg={C.coral} />
             <div>
-              <p style={{fontSize:"11px",color:"rgba(255,255,255,0.7)",margin:0,fontWeight:"600"}}>މަރުހަބާ</p>
+              <p style={{fontSize:"11px",color:"rgba(255,255,255,0.7)",margin:0,fontWeight:"600"}}>{t("welcome")}</p>
               <p style={{fontSize:"13px",fontWeight:"700",color:C.white,margin:0}}>{currentProfile?.name}</p>
             </div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
             <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
               <div style={{width:"32px",height:"32px",borderRadius:"50%",background:C.coral,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"18px"}}>📖</div>
-              <span style={{fontSize:"16px",fontWeight:"900",color:C.white}}>ވާހަކަ މައިޒާން</span>
+              <span style={{fontSize:"16px",fontWeight:"900",color:C.white}}>{t("appName")}</span>
             </div>
             <button onClick={toggleLang} title="Language" style={{background:"rgba(255,255,255,0.2)",border:"none",color:C.white,fontSize:"11px",fontWeight:"700",padding:"6px 12px",borderRadius:"999px",cursor:"pointer"}}>{lang === "dv" ? "EN" : "ދިވެހި"}</button>
-            <button onClick={() => loadAllData(session)} title="ރިފްރެޝް" style={{background:"rgba(255,255,255,0.2)",border:"none",color:C.white,fontSize:"16px",width:"32px",height:"32px",borderRadius:"50%",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"700"}}>↻</button>
-            {session && <button onClick={handleLogout} style={{background:"rgba(255,255,255,0.15)",border:"none",color:C.white,fontSize:"11px",padding:"5px 10px",borderRadius:"8px",cursor:"pointer",fontWeight:"600"}}>ނިކުމެވަޑައިންނަވާ</button>}
-            {!session && <button onClick={() => setScreen("login")} style={{background:"rgba(255,255,255,0.15)",border:"none",color:C.white,fontSize:"11px",padding:"5px 10px",borderRadius:"8px",cursor:"pointer",fontWeight:"600"}}>ލޮގިން / ރަޖިސްޓަރ</button>}
+            <button onClick={() => loadAllData(session)} title={t("refresh")} style={{background:"rgba(255,255,255,0.2)",border:"none",color:C.white,fontSize:"16px",width:"32px",height:"32px",borderRadius:"50%",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"700"}}>↻</button>
+            {session && <button onClick={handleLogout} style={{background:"rgba(255,255,255,0.15)",border:"none",color:C.white,fontSize:"11px",padding:"5px 10px",borderRadius:"8px",cursor:"pointer",fontWeight:"600"}}>{t("logout")}</button>}
+            {!session && <button onClick={() => setScreen("login")} style={{background:"rgba(255,255,255,0.15)",border:"none",color:C.white,fontSize:"11px",padding:"5px 10px",borderRadius:"8px",cursor:"pointer",fontWeight:"600"}}>{t("loginRegister")}</button>}
           </div>
         </div>
       </div>
@@ -696,16 +713,16 @@ spamHint: { dv: "އީމެއިލް ނުލިބިއްޖެ ނަމަ Spam ފޯލްޑ�
 
         {pendingInvites.length > 0 && (
           <div style={{background:`linear-gradient(135deg, ${C.amber}22, ${C.amber}11)`,border:`2px solid ${C.amber}`,borderRadius:"16px",padding:"16px",marginBottom:"16px"}}>
-            <h3 style={{color:C.navy,fontWeight:"700",fontSize:"14px",margin:"0 0 12px"}}>🔔 ގްރޫޕް ވާހަކައިގެ ދައުވަތު</h3>
+            <h3 style={{color:C.navy,fontWeight:"700",fontSize:"14px",margin:"0 0 12px"}}>🔔 {t("groupInvites")}</h3>
             {pendingInvites.map(invite => (
               <div key={invite.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:C.white,borderRadius:"12px",padding:"12px 16px",marginBottom:"6px"}}>
                 <div style={{display:"flex",gap:"8px"}}>
-                  <button onClick={() => handleDeclineInvite(invite)} style={{background:C.cream,color:C.gray,fontSize:"12px",padding:"7px 14px",borderRadius:"8px",border:`1.5px solid ${C.lightGray}`,cursor:"pointer",fontWeight:"700"}}>ދެކޮޅު</button>
-                  <button onClick={() => handleAcceptInvite(invite)} style={{background:`linear-gradient(to right, ${C.amber}, #ffcc33)`,color:C.navy,fontSize:"12px",padding:"7px 14px",borderRadius:"8px",border:"none",cursor:"pointer",fontWeight:"700"}}>ގަބޫލު ✓</button>
+                  <button onClick={() => handleDeclineInvite(invite)} style={{background:C.cream,color:C.gray,fontSize:"12px",padding:"7px 14px",borderRadius:"8px",border:`1.5px solid ${C.lightGray}`,cursor:"pointer",fontWeight:"700"}}>{t("decline")}</button>
+                  <button onClick={() => handleAcceptInvite(invite)} style={{background:`linear-gradient(to right, ${C.amber}, #ffcc33)`,color:C.navy,fontSize:"12px",padding:"7px 14px",borderRadius:"8px",border:"none",cursor:"pointer",fontWeight:"700"}}>{t("accept")}</button>
                 </div>
-                <div style={{textAlign:"right"}}>
+                <div style={{textAlign:"start"}}>
                   <p style={{color:C.navy,fontSize:"14px",fontWeight:"700",margin:0}}>{invite.stories?.title}</p>
-                  <p style={{color:C.gray,fontSize:"12px",margin:0}}>{invite.inviter_name} ގެ ގްރޫޕް ވާހަކަ</p>
+                  <p style={{color:C.gray,fontSize:"12px",margin:0}}>{t("invitedByPre")}{invite.inviter_name}{t("invitedByPost")}</p>
                 </div>
               </div>
             ))}
@@ -715,12 +732,12 @@ spamHint: { dv: "އީމެއިލް ނުލިބިއްޖެ ނަމަ Spam ފޯލްޑ�
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}}>
           <button onClick={() => { if (!session) { setScreen("login"); return; } setShowCreate(true); setCreateType(activeTab); }}
             style={{background: activeTab==="group" ? `linear-gradient(to right, ${C.coral}, ${C.amber})` : `linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color: activeTab==="group" ? C.navy : C.white,fontWeight:"700",padding:"10px 18px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"13px",boxShadow: activeTab==="group" ? `0 4px 12px rgba(255,87,87,0.3)` : `0 4px 12px rgba(13,158,158,0.3)`}}>
-            {activeTab==="group" ? "👥 ގްރޫޕް ވާހަކައެއް ފަށާ" : "✨ ވާހަކައެއް ފަށާ"}
+            {activeTab==="group" ? "👥 " + t("startGroupStory") : "✨ " + t("startStory")}
           </button>
           <div style={{display:"flex",background:C.white,borderRadius:"12px",overflow:"hidden",boxShadow:"0 2px 8px rgba(10,37,51,0.1)",border:`1.5px solid ${C.lightGray}`}}>
-            <button onClick={() => setActiveTab("public")} style={{padding:"8px 14px",fontSize:"12px",fontWeight:"700",background: activeTab==="public" ? C.teal : "transparent",color: activeTab==="public" ? C.white : C.gray,border:"none",cursor:"pointer"}}>🌐 ޢާންމު</button>
+            <button onClick={() => setActiveTab("public")} style={{padding:"8px 14px",fontSize:"12px",fontWeight:"700",background: activeTab==="public" ? C.teal : "transparent",color: activeTab==="public" ? C.white : C.gray,border:"none",cursor:"pointer"}}>🌐 {t("publicTab")}</button>
             <button onClick={() => { if (!session) { setScreen("login"); return; } setActiveTab("group"); }} style={{padding:"8px 14px",fontSize:"12px",fontWeight:"700",background: activeTab==="group" ? C.coral : "transparent",color: activeTab==="group" ? C.white : C.gray,border:"none",cursor:"pointer",position:"relative"}}>
-              🔒 ގްރޫޕް
+              🔒 {t("groupTab")}
               {groupStories.length > 0 && <span style={{position:"absolute",top:"-4px",right:"-4px",width:"18px",height:"18px",background:C.coral,borderRadius:"50%",fontSize:"10px",display:"flex",alignItems:"center",justifyContent:"center",color:C.white,fontWeight:"700",border:`2px solid ${C.white}`}}>{groupStories.length}</span>}
             </button>
           </div>
@@ -738,18 +755,18 @@ spamHint: { dv: "އީމެއިލް ނުލިބިއްޖެ ނަމަ Spam ފޯލްޑ�
                     <div style={{fontSize:"44px"}}>{story.cover_emoji}</div>
                     <div style={{flex:1}}>
                       <div style={{display:"flex",gap:"6px",flexWrap:"wrap",marginBottom:"6px"}}>
-                        {story.type==="group" && <Badge bg={C.amber} color={C.navy}>🔒 ގްރޫޕް</Badge>}
-                        <Badge bg="rgba(255,255,255,0.25)">{genre?.label}</Badge>
-                        {story.finished && <Badge bg={C.mint} color={C.navy}>ނިމިފައި</Badge>}
+                        {story.type==="group" && <Badge bg={C.amber} color={C.navy}>🔒 {t("groupTab")}</Badge>}
+                        <Badge bg="rgba(255,255,255,0.25)">{lang === "en" ? genre?.en : genre?.label}</Badge>
+                        {story.finished && <Badge bg={C.mint} color={C.navy}>{t("finished")}</Badge>}
                       </div>
                       <h3 style={{color:C.white,fontWeight:"800",fontSize:"17px",margin:"0 0 3px"}}>{story.title}</h3>
-                      <p style={{color:"rgba(255,255,255,0.7)",fontSize:"12px",margin:0}}>ފެށީ {story.creator_name}</p>
+                      <p style={{color:"rgba(255,255,255,0.7)",fontSize:"12px",margin:0}}>{t("startedBy")} {story.creator_name}</p>
                     </div>
                   </div>
                   <div style={{padding:"14px 20px"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                       <button onClick={(e) => { e.stopPropagation(); handleLike(story); }} style={{background:"none",border:"none",cursor:"pointer",fontSize:"12px",color:C.gray,fontWeight:"600",display:"flex",alignItems:"center",gap:"4px",padding:0}}><span style={{filter: myLiked(story.id) ? "none" : "grayscale(1)",opacity: myLiked(story.id) ? 1 : 0.55}}>❤️</span>{likeCount(story.id)}</button>{isAdmin && <button onClick={(e) => { e.stopPropagation(); handleDeleteStory(story); }} style={{background:"none",border:"1.5px solid #FF5757",color:"#FF5757",cursor:"pointer",fontSize:"14px",padding:"3px 10px",borderRadius:"999px"}}>🗑️</button>}
-                      {!story.finished && <span style={{fontSize:"12px",background: story.type==="group" ? "rgba(255,87,87,0.1)" : C.tealLight,color: story.type==="group" ? C.coral : C.tealDark,padding:"4px 12px",borderRadius:"999px",fontWeight:"700"}}>ވާހަކައަށް ބައެއް އިތުރުކުރެއްވުމަށް</span>}
+                      {!story.finished && <span style={{fontSize:"12px",background: story.type==="group" ? "rgba(255,87,87,0.1)" : C.tealLight,color: story.type==="group" ? C.coral : C.tealDark,padding:"4px 12px",borderRadius:"999px",fontWeight:"700"}}>{t("addToStory")}</span>}
                     </div>
                   </div>
                 </div>
@@ -758,8 +775,8 @@ spamHint: { dv: "އީމެއިލް ނުލިބިއްޖެ ނަމަ Spam ފޯލްޑ�
             {(activeTab === "public" ? publicStories : groupStories).length === 0 && (
               <div style={{textAlign:"center",padding:"64px 0",background:C.white,borderRadius:"16px"}}>
                 <div style={{fontSize:"32px",marginBottom:"16px"}}>{activeTab==="group" ? "👥" : "📖"}</div>
-                <p style={{color:C.navy,fontWeight:"700",fontSize:"16px",margin:"0 0 6px"}}>{activeTab==="group" ? "ގްރޫޕް ވާހަކައެއް ނެތް" : "ވާހަކައެއް ނެތް"}</p>
-                <p style={{color:C.gray,fontSize:"14px",margin:0}}>{activeTab==="group" ? "ރަހުމަތްތެރިންނާ އެކު ވާހަކައެއް ފަށާ" : "ފުރަތަމަ ވާހަކަ ފަށާ!"}</p>
+                <p style={{color:C.navy,fontWeight:"700",fontSize:"16px",margin:"0 0 6px"}}>{activeTab==="group" ? t("noGroupStories") : t("noStories")}</p>
+                <p style={{color:C.gray,fontSize:"14px",margin:0}}>{activeTab==="group" ? t("startWithFriends") : t("beFirst")}</p>
               </div>
             )}
           </div>
@@ -774,8 +791,8 @@ spamHint: { dv: "އީމެއިލް ނުލިބިއްޖެ ނަމަ Spam ފޯލްޑ�
               <h3 style={{color:C.navy,fontWeight:"800",fontSize:"17px",margin:0}}>ވާހަކައެއް ފަށާ</h3>
             </div>
             <div style={{display:"flex",background:C.cream,borderRadius:"12px",overflow:"hidden",marginBottom:"20px",padding:"4px",gap:"4px"}}>
-              <button onClick={() => setCreateType("public")} style={{flex:1,padding:"9px",fontSize:"13px",fontWeight:"700",background: createType==="public" ? C.teal : "transparent",color: createType==="public" ? C.white : C.gray,border:"none",cursor:"pointer",borderRadius:"9px"}}>🌐 ޢާންމު</button>
-              <button onClick={() => setCreateType("group")} style={{flex:1,padding:"9px",fontSize:"13px",fontWeight:"700",background: createType==="group" ? C.coral : "transparent",color: createType==="group" ? C.white : C.gray,border:"none",cursor:"pointer",borderRadius:"9px"}}>🔒 ގްރޫޕް</button>
+              <button onClick={() => setCreateType("public")} style={{flex:1,padding:"9px",fontSize:"13px",fontWeight:"700",background: createType==="public" ? C.teal : "transparent",color: createType==="public" ? C.white : C.gray,border:"none",cursor:"pointer",borderRadius:"9px"}}>🌐 {t("publicTab")}</button>
+              <button onClick={() => setCreateType("group")} style={{flex:1,padding:"9px",fontSize:"13px",fontWeight:"700",background: createType==="group" ? C.coral : "transparent",color: createType==="group" ? C.white : C.gray,border:"none",cursor:"pointer",borderRadius:"9px"}}>🔒 {t("groupTab")}</button>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:"16px"}}>
               <div>
@@ -785,7 +802,7 @@ spamHint: { dv: "އީމެއިލް ނުލިބިއްޖެ ނަމަ Spam ފޯލްޑ�
               <div>
                 <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"8px",fontWeight:"700"}}>ޖޯންރާ</label>
                 <div style={{display:"flex",flexWrap:"wrap",gap:"8px"}}>
-                  {GENRES.map(g => <button key={g.id} onClick={() => setNewStory({...newStory,genre:g.id})} style={{padding:"7px 14px",borderRadius:"999px",fontSize:"13px",fontWeight:"600",background: newStory.genre===g.id ? C.teal : C.cream,color: newStory.genre===g.id ? C.white : C.navy,border: newStory.genre===g.id ? "none" : `1.5px solid ${C.lightGray}`,cursor:"pointer"}}>{g.emoji} {g.label}</button>)}
+                  {GENRES.map(g => <button key={g.id} onClick={() => setNewStory({...newStory,genre:g.id})} style={{padding:"7px 14px",borderRadius:"999px",fontSize:"13px",fontWeight:"600",background: newStory.genre===g.id ? C.teal : C.cream,color: newStory.genre===g.id ? C.white : C.navy,border: newStory.genre===g.id ? "none" : `1.5px solid ${C.lightGray}`,cursor:"pointer"}}>{g.emoji} {lang === "en" ? g.en : g.label}</button>)}
                 </div>
               </div>
               <div>
