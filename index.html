@@ -502,8 +502,8 @@ function App() {
           <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
             {authMode === "register" && (
               <div>
-                <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"5px",fontWeight:"600"}}>ނަން</label>
-                <input value={loginName} onChange={e=>setLoginName(e.target.value)} placeholder="ވާހަކަ ލިޔުމަށް ބޭނުންކުރާނެ ނަމެއް" style={inputStyle} />
+                <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"5px",fontWeight:"600"}}>{t("fullName")}</label>
+                <input value={loginName} onChange={e=>setLoginName(e.target.value)} placeholder={t("namePlaceholder")} style={inputStyle} />
               </div>
             )}
             <div>
@@ -521,7 +521,7 @@ function App() {
             </button>
             {authMode === "login" && (
               <div style={{textAlign:"center",paddingTop:"10px",borderTop:`1px solid ${C.lightGray}`}}>
-                <p style={{color:C.gray,fontSize:"12px",margin:"0 0 8px"}}>ޕާސްވޯޑް ހަދާން ނެތިއްޖެ ނަމަ؟</p>
+                <p style={{color:C.gray,fontSize:"12px",margin:"0 0 8px"}}>{t("forgotQ")}</p>
                 <button onClick={handleForgotPassword} disabled={authLoading}
                   style={{background:`${C.teal}15`,border:`1.5px solid ${C.teal}`,color:C.teal,fontSize:"13px",cursor:"pointer",fontWeight:"700",padding:"10px 20px",borderRadius:"10px",width:"100%"}}>
                   🔑 ޕާސްވޯޑް ރީސެޓް ކުރައްވާ
