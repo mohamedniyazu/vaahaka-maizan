@@ -182,6 +182,17 @@ openingPlaceholder: { dv: "ވާހަކަ ފެއްޓެވުމަށް ދެތިން ފ
 inviteMembers: { dv: "މި ގްރޫޕްގެ ބައިވެރިންނަށް ދައުވަތު ދެއްވުމަށް", en: "Invite members to this group" },
 searchName: { dv: "ނަން ހޯދާ...", en: "Search by name..." },
 createSubmit: { dv: "ލިޔުއްވި ބައި ހުށަހަޅުއްވާ", en: "Publish story" },
+back: { dv: "← ކުރީގެ ސަފްހާއަށް", en: "← Back" },
+invite: { dv: "ދައުވަތު", en: "Invite" },
+storyFinished: { dv: "ވާހަކަ ނިންމާލެވިއްޖެ", en: "This story is finished" },
+continuePlaceholder: { dv: "ވާހަކަ ކުރިއަށް ގެންދަވާ...", en: "Continue the story..." },
+submitPart: { dv: "ލިޔުއްވި ބައި ހުށަހަޅުއްވާ", en: "Submit your part" },
+finish: { dv: "ނިންމާ", en: "Finish" },
+loginToAdd: { dv: "ވާހަކައަށް ބައެއް އިތުރުކުރުމަށް ލޮގިންކުރައްވާ", en: "Log in to add to this story" },
+inviteMember: { dv: "މެންބަރަކު ދައުވަތު ދޭ", en: "Invite a member" },
+slotsLeft: { dv: "ސްލޮޓް ބާކީ", en: "slots left" },
+noNameFound: { dv: "ހޯދާ ނަމެއް ނެތް", en: "No matching names" },
+inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
   };
   const t = (key) => (TEXT[key] ? (TEXT[key][lang] ?? TEXT[key].dv) : key);
   const showNotif = (msg) => { setNotification(msg); setTimeout(() => setNotification(""), 3000); };
@@ -590,7 +601,7 @@ createSubmit: { dv: "ލިޔުއްވި ބައި ހުށަހަޅުއްވާ", en: "P
         <Notif msg={notification} />
         <div style={{background: selectedStory.cover_color || `linear-gradient(135deg, ${C.teal}, ${C.navy})`, padding:"10px 14px 16px",flexShrink:0}}>
           <div style={{maxWidth:"640px",margin:"0 auto"}}>
-            <button onClick={() => { setScreen("home"); setShowInvite(false); loadAllData(session); }} style={{color:"rgba(255,255,255,0.85)",background:"rgba(255,255,255,0.15)",border:"none",cursor:"pointer",fontSize:"13px",marginBottom:"10px",display:"inline-flex",alignItems:"center",gap:"6px",padding:"6px 14px",borderRadius:"999px",fontWeight:"600"}}>← ކުރީގެ ސަފްހާއަށް</button>
+            <button onClick={() => { setScreen("home"); setShowInvite(false); loadAllData(session); }} style={{color:"rgba(255,255,255,0.85)",background:"rgba(255,255,255,0.15)",border:"none",cursor:"pointer",fontSize:"13px",marginBottom:"10px",display:"inline-flex",alignItems:"center",gap:"6px",padding:"6px 14px",borderRadius:"999px",fontWeight:"600"}}>{t("back")}</button>
             <div style={{display:"flex",alignItems:"flex-start",gap:"16px"}}>
               <div style={{fontSize:"32px"}}>{selectedStory.cover_emoji}</div>
               <div style={{flex:1}}>
@@ -612,7 +623,7 @@ createSubmit: { dv: "ލިޔުއްވި ބައި ހުށަހަޅުއްވާ", en: "P
                     {m.user_id === selectedStory.creator_id && "👑"}
                   </div>
                 ))}
-                {canInvite && <button onClick={() => setShowInvite(true)} style={{background:"rgba(255,255,255,0.2)",border:"1px dashed rgba(255,255,255,0.5)",borderRadius:"999px",padding:"2px 8px",cursor:"pointer",color:C.white,fontSize:"10px",fontWeight:"600"}}>+ ދައުވަތު</button>}
+                {canInvite && <button onClick={() => setShowInvite(true)} style={{background:"rgba(255,255,255,0.2)",border:"1px dashed rgba(255,255,255,0.5)",borderRadius:"999px",padding:"2px 8px",cursor:"pointer",color:C.white,fontSize:"10px",fontWeight:"600"}}>+ {t("invite")}</button>}
               </div>
             )}
           </div>
@@ -634,7 +645,7 @@ createSubmit: { dv: "ލިޔުއްވި ބައި ހުށަހަޅުއްވާ", en: "P
           {selectedStory.finished && (
             <div style={{marginTop:"24px",background:`linear-gradient(135deg, ${C.mint}22, ${C.tealLight})`,border:`2px solid ${C.mint}`,borderRadius:"16px",padding:"24px",textAlign:"center"}}>
               <div style={{fontSize:"36px",marginBottom:"8px"}}>🎉</div>
-              <p style={{color:C.tealDark,fontWeight:"700",margin:0,fontSize:"16px"}}>ވާހަކަ ނިންމާލެވިއްޖެ</p>
+              <p style={{color:C.tealDark,fontWeight:"700",margin:0,fontSize:"16px"}}>{t("storyFinished")}</p>
             </div>
           )}
           <div ref={contribEndRef} style={{height:"8px"}} />
@@ -644,11 +655,11 @@ createSubmit: { dv: "ލިޔުއްވި ބައި ހުށަހަޅުއްވާ", en: "P
         {!selectedStory.finished && isMember && session && (
           <div style={{background:C.white,borderTop:`2px solid ${C.tealLight}`,padding:"12px 16px",boxShadow:"0 -4px 20px rgba(10,37,51,0.1)",flexShrink:0}}>
             <div style={{maxWidth:"640px",margin:"0 auto"}}>
-              <textarea value={newContrib} onChange={e=>setNewContrib(e.target.value)} placeholder="ވާހަކަ ކުރިއަށް ގެންދަވާ..."
+              <textarea value={newContrib} onChange={e=>setNewContrib(e.target.value)} placeholder={t("continuePlaceholder")}
                 style={{...inputStyle,resize:"none",marginBottom:"10px",border:`1.5px solid ${C.teal}`}} rows={2} />
               <div style={{display:"flex",gap:"8px"}}>
-                <button onClick={handleAddContribution} style={{flex:1,background:`linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color:C.white,fontWeight:"700",padding:"11px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"13px",boxShadow:`0 4px 12px rgba(13,158,158,0.35)`}}>✍️ ލިޔުއްވި ބައި ހުށަހަޅުއްވާ</button>
-                {isCreator && !selectedStory.finished && <button onClick={handleFinishStory} style={{background:`linear-gradient(to right, ${C.mint}, ${C.teal})`,color:C.navy,fontWeight:"700",padding:"11px 14px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"13px"}}>✅ ނިންމާ</button>}
+                <button onClick={handleAddContribution} style={{flex:1,background:`linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color:C.white,fontWeight:"700",padding:"11px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"13px",boxShadow:`0 4px 12px rgba(13,158,158,0.35)`}}>✍️ {t("submitPart")}</button>
+                {isCreator && !selectedStory.finished && <button onClick={handleFinishStory} style={{background:`linear-gradient(to right, ${C.mint}, ${C.teal})`,color:C.navy,fontWeight:"700",padding:"11px 14px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"13px"}}>✅ {t("finish")}</button>}
               </div>
             </div>
           </div>
@@ -657,7 +668,7 @@ createSubmit: { dv: "ލިޔުއްވި ބައި ހުށަހަޅުއްވާ", en: "P
         {!selectedStory.finished && !session && (
   <div style={{background:C.white,borderTop:"2px solid #E8F7F7",padding:"14px 16px",boxShadow:"0 -4px 20px rgba(10,37,51,0.1)",flexShrink:0}}>
     <div style={{maxWidth:"640px",margin:"0 auto"}}>
-      <button onClick={() => setScreen("login")} style={{width:"100%",background:"linear-gradient(to right, #0D9E9E, #0A7A7A)",color:C.white,fontWeight:"700",padding:"12px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"13px"}}>ވާހަކައަށް ބައެއް އިތުރުކުރުމަށް ލޮގިންކުރައްވާ</button>
+      <button onClick={() => setScreen("login")} style={{width:"100%",background:"linear-gradient(to right, #0D9E9E, #0A7A7A)",color:C.white,fontWeight:"700",padding:"12px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"13px"}}>{t("loginToAdd")}</button>
     </div>
   </div>
 )}
@@ -666,15 +677,15 @@ createSubmit: { dv: "ލިޔުއްވި ބައި ހުށަހަޅުއްވާ", en: "P
             <div style={{background:C.white,borderRadius:"20px",padding:"24px",width:"100%",maxWidth:"512px"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px"}}>
                 <button onClick={() => { setShowInvite(false); setInviteSearch(""); }} style={{background:C.cream,border:"none",color:C.navy,cursor:"pointer",width:"32px",height:"32px",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px"}}>✕</button>
-                <h3 style={{color:C.navy,fontWeight:"700",margin:0,fontSize:"16px"}}>މެންބަރަކު ދައުވަތު ދޭ</h3>
+                <h3 style={{color:C.navy,fontWeight:"700",margin:0,fontSize:"16px"}}>{t("inviteMember")}</h3>
               </div>
-              <p style={{color:C.gray,fontSize:"12px",textAlign:"center",margin:"0 0 12px"}}>{members.length}/10 · {10-members.length} ސްލޮޓް ބާކީ</p>
+              <p style={{color:C.gray,fontSize:"12px",textAlign:"center",margin:"0 0 12px"}}>{members.length}/10 · {10-members.length} {t("slotsLeft")}</p>
               <input value={inviteSearch} onChange={e=>setInviteSearch(e.target.value)} placeholder={t("searchName")} style={{...inputStyle,marginBottom:"12px"}} />
               <div style={{maxHeight:"200px",overflowY:"auto",display:"flex",flexDirection:"column",gap:"8px"}}>
-                {filteredInvite.length === 0 ? <p style={{color:C.gray,textAlign:"center",padding:"16px",fontSize:"14px"}}>ހޯދާ ނަމެއް ނެތް</p>
+                {filteredInvite.length === 0 ? <p style={{color:C.gray,textAlign:"center",padding:"16px",fontSize:"14px"}}>{t("noNameFound")}</p>
                   : filteredInvite.map(u => (
                   <div key={u.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:C.cream,borderRadius:"12px",padding:"12px 16px"}}>
-                    <button onClick={() => handleInviteMember(u)} style={{background:`linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color:C.white,fontSize:"12px",padding:"7px 14px",borderRadius:"8px",border:"none",cursor:"pointer",fontWeight:"700"}}>ދައުވަތު ދޭ</button>
+                    <button onClick={() => handleInviteMember(u)} style={{background:`linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color:C.white,fontSize:"12px",padding:"7px 14px",borderRadius:"8px",border:"none",cursor:"pointer",fontWeight:"700"}}>{t("inviteBtn")}</button>
                     <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
                       <span style={{fontSize:"14px",color:C.navy,fontWeight:"600"}}>{u.name}</span>
                       <Avatar letter={u.avatar_letter} size={32} bg={C.teal} />
