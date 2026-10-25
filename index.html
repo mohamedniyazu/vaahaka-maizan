@@ -716,7 +716,10 @@ confirmDeletePost: { dv: "Delete this post?", en: "Delete this post?" },
   }
 
   // HOME
-  const filteredForCreate = allUsers.filter(u => u.id !== session?.user?.id && u.name?.includes(memberSearch));
+  const storyLang = (s) => /[\u0780-\u07BF]/.test((s.title || "") + (s.opening || "")) ? "dv" : "en";
+const visibleStories = (activeTab === "public" ? publicStories : groupStories).filter(s => storyLang(s) === lang);
+const groupCount = groupStories.filter(s => storyLang(s) === lang).length;
+const filteredForCreate = allUsers.filter(u => u.id !== session?.user?.id && u.name?.includes(memberSearch));
 
   return (
     <div style={{minHeight:"100vh",background:C.cream}}>
@@ -772,7 +775,7 @@ confirmDeletePost: { dv: "Delete this post?", en: "Delete this post?" },
             <button onClick={() => setActiveTab("public")} style={{padding:"8px 14px",fontSize:"12px",fontWeight:"700",background: activeTab==="public" ? C.teal : "transparent",color: activeTab==="public" ? C.white : C.gray,border:"none",cursor:"pointer"}}>🌐 {t("publicTab")}</button>
             <button onClick={() => { if (!session) { setScreen("login"); return; } setActiveTab("group"); }} style={{padding:"8px 14px",fontSize:"12px",fontWeight:"700",background: activeTab==="group" ? C.coral : "transparent",color: activeTab==="group" ? C.white : C.gray,border:"none",cursor:"pointer",position:"relative"}}>
               🔒 {t("groupTab")}
-              {groupStories.length > 0 && <span style={{position:"absolute",top:"-4px",right:"-4px",width:"18px",height:"18px",background:C.coral,borderRadius:"50%",fontSize:"10px",display:"flex",alignItems:"center",justifyContent:"center",color:C.white,fontWeight:"700",border:`2px solid ${C.white}`}}>{groupStories.length}</span>}
+              {groupCount > 0 && <span style={{position:"absolute",top:"-4px",right:"-4px",width:"18px",height:"18px",background:C.coral,borderRadius:"50%",fontSize:"10px",display:"flex",alignItems:"center",justifyContent:"center",color:C.white,fontWeight:"700",border:`2px solid ${C.white}`}}>{groupCount}</span>}
             </button>
           </div>
         </div>
@@ -781,7 +784,7 @@ confirmDeletePost: { dv: "Delete this post?", en: "Delete this post?" },
           <div style={{display:"flex",justifyContent:"center",padding:"40px"}}><div className="spinner"></div></div>
         ) : (
           <div style={{display:"flex",flexDirection:"column",gap:"16px"}}>
-            {(activeTab === "public" ? publicStories : groupStories).map(story => {
+            {visibleStories.map(story => {
               const genre = GENRES.find(g => g.id === story.genre);
               return (
                 <div key={story.id} onClick={() => openStory(story)} style={{background:C.white,borderRadius:"16px",overflow:"hidden",cursor:"pointer",boxShadow:"0 2px 12px rgba(10,37,51,0.08)",border:`1.5px solid ${activeTab==="group" ? "rgba(255,87,87,0.15)" : "transparent"}`}}>
@@ -806,7 +809,7 @@ confirmDeletePost: { dv: "Delete this post?", en: "Delete this post?" },
                 </div>
               );
             })}
-            {(activeTab === "public" ? publicStories : groupStories).length === 0 && (
+            {visibleStories.length === 0 && (
               <div style={{textAlign:"center",padding:"64px 0",background:C.white,borderRadius:"16px"}}>
                 <div style={{fontSize:"32px",marginBottom:"16px"}}>{activeTab==="group" ? "👥" : "📖"}</div>
                 <p style={{color:C.navy,fontWeight:"700",fontSize:"16px",margin:"0 0 6px"}}>{activeTab==="group" ? t("noGroupStories") : t("noStories")}</p>
