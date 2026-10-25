@@ -133,11 +133,11 @@ function App() {
     fullName: { dv: "ނަން", en: "Name" },
     namePlaceholder: { dv: "ވާހަކަ ލިޔުމަށް ބޭނުން ކުރާނެ ނަމެއް", en: "A name to write stories with" },
     password: { dv: "ޕާސްވޯޑް", en: "Password" },
-    loggingIn: { dv: "ވަންނަނީ...", en: "Logging in..." },
+    loggingIn: { dv: t("loggingIn"), en: "Logging in..." },
     loginBtn: { dv: "ލޮގިން ކުރައްވާ", en: "Login" },
     registerBtn: { dv: "ރަޖިސްޓަރ ކުރައްވާ", en: "Register" },
     forgotQ: { dv: "ޕާސްވޯޑް ހަނދާން ނެތިއްޖެނަމަ؟", en: "Forgot your password?" },
-    resetPw: { dv: "ޕާސްވޯޑް ރީސެޓް ކުރައްވާ", en: "Reset password" },
+    resetPw: { dv: "{t("resetPw")}", en: "Reset password" },
     welcome: { dv: "މަރުހަބާ", en: "Welcome" },
     logout: { dv: "ވަޑައިގެން ނިކުމެވަޑައި", en: "Log out" },
     loginRegister: { dv: "ލޮގިން / ރަޖިސްޓަރ", en: "Login / Register" },
@@ -511,13 +511,13 @@ function App() {
               <input value={loginEmail} onChange={e=>setLoginEmail(e.target.value)} placeholder="email@example.com" style={{...inputStyle,direction:"ltr"}} type="email" />
             </div>
             <div>
-              <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"5px",fontWeight:"600"}}>ޕާސްވޯޑް</label>
+              <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"5px",fontWeight:"600"}}>{t("password")}</label>
               <input value={loginPassword} onChange={e=>setLoginPassword(e.target.value)} placeholder="••••••••" style={{...inputStyle,direction:"ltr"}} type="password" />
             </div>
             {authError && <p style={{color:C.coral,fontSize:"13px",margin:0,textAlign:"center",fontWeight:"600"}}>{authError}</p>}
             <button onClick={authMode==="login" ? handleLogin : handleRegister} disabled={authLoading}
               style={{width:"100%",background:`linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color:C.white,fontWeight:"700",padding:"13px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"14px",opacity:authLoading?0.7:1,boxShadow:`0 4px 16px rgba(13,158,158,0.4)`}}>
-              {authLoading ? "ތައްޔާރު ވަނީ..." : authMode==="login" ? "ލޮގިން ކުރައްވާ" : "ރަޖިސްޓަރ ކުރައްވާ"}
+              {authLoading ? "ތައްޔާރު ވަނީ..." : authMode==="login" ? t("loginBtn") : t("registerBtn")}
             </button>
             {authMode === "login" && (
               <div style={{textAlign:"center",paddingTop:"10px",borderTop:`1px solid ${C.lightGray}`}}>
