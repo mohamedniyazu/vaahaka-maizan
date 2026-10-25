@@ -174,6 +174,14 @@ noStories: { dv: "ވާހަކައެއް ނެތް", en: "No stories yet" },
 noGroupStories: { dv: "ގްރޫޕް ވާހަކައެއް ނެތް", en: "No group stories yet" },
 beFirst: { dv: "ފުރަތަމަ ވާހަކަ ފަށާ!", en: "Write the first story!" },
 startWithFriends: { dv: "ރަހުމަތްތެރިންނާ އެކު ވާހަކައެއް ފަށާ", en: "Start a story with your friends" },
+storyTitle: { dv: "ވާހަކައިގެ ނަން", en: "Story title" },
+titlePlaceholder: { dv: "ވާހަކައަށް ނަމެއް ދެއްވާ", en: "Give your story a title" },
+genre: { dv: "ޖޯންރާ", en: "Genre" },
+opening: { dv: "ވާހަކައިގެ ފެށުން", en: "How the story begins" },
+openingPlaceholder: { dv: "ވާހަކަ ފެއްޓެވުމަށް ދެތިން ފޮޅުވަތް ލިޔުއްވާ...", en: "Write a few lines to start the story..." },
+inviteMembers: { dv: "މި ގްރޫޕްގެ ބައިވެރިންނަށް ދައުވަތު ދެއްވުމަށް", en: "Invite members to this group" },
+searchName: { dv: "ނަން ހޯދާ...", en: "Search by name..." },
+createSubmit: { dv: "ލިޔުއްވި ބައި ހުށަހަޅުއްވާ", en: "Publish story" },
   };
   const t = (key) => (TEXT[key] ? (TEXT[key][lang] ?? TEXT[key].dv) : key);
   const showNotif = (msg) => { setNotification(msg); setTimeout(() => setNotification(""), 3000); };
@@ -661,7 +669,7 @@ startWithFriends: { dv: "ރަހުމަތްތެރިންނާ އެކު ވާހަކަ�
                 <h3 style={{color:C.navy,fontWeight:"700",margin:0,fontSize:"16px"}}>މެންބަރަކު ދައުވަތު ދޭ</h3>
               </div>
               <p style={{color:C.gray,fontSize:"12px",textAlign:"center",margin:"0 0 12px"}}>{members.length}/10 · {10-members.length} ސްލޮޓް ބާކީ</p>
-              <input value={inviteSearch} onChange={e=>setInviteSearch(e.target.value)} placeholder="ނަން ހޯދާ..." style={{...inputStyle,marginBottom:"12px"}} />
+              <input value={inviteSearch} onChange={e=>setInviteSearch(e.target.value)} placeholder={t("searchName")} style={{...inputStyle,marginBottom:"12px"}} />
               <div style={{maxHeight:"200px",overflowY:"auto",display:"flex",flexDirection:"column",gap:"8px"}}>
                 {filteredInvite.length === 0 ? <p style={{color:C.gray,textAlign:"center",padding:"16px",fontSize:"14px"}}>ހޯދާ ނަމެއް ނެތް</p>
                   : filteredInvite.map(u => (
@@ -788,7 +796,7 @@ startWithFriends: { dv: "ރަހުމަތްތެރިންނާ އެކު ވާހަކަ�
           <div style={{background:C.white,borderRadius:"20px 20px 16px 16px",padding:"24px",width:"100%",maxWidth:"512px",boxShadow:"0 -8px 40px rgba(0,0,0,0.2)",maxHeight:"90vh",overflowY:"auto"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}}>
               <button onClick={() => { setShowCreate(false); setSelectedMembers([]); setMemberSearch(""); }} style={{background:C.cream,border:"none",color:C.navy,cursor:"pointer",width:"32px",height:"32px",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"700"}}>✕</button>
-              <h3 style={{color:C.navy,fontWeight:"800",fontSize:"17px",margin:0}}>ވާހަކައެއް ފަށާ</h3>
+              <h3 style={{color:C.navy,fontWeight:"800",fontSize:"17px",margin:0}}>{t("startStory")}</h3>
             </div>
             <div style={{display:"flex",background:C.cream,borderRadius:"12px",overflow:"hidden",marginBottom:"20px",padding:"4px",gap:"4px"}}>
               <button onClick={() => setCreateType("public")} style={{flex:1,padding:"9px",fontSize:"13px",fontWeight:"700",background: createType==="public" ? C.teal : "transparent",color: createType==="public" ? C.white : C.gray,border:"none",cursor:"pointer",borderRadius:"9px"}}>🌐 {t("publicTab")}</button>
@@ -796,26 +804,26 @@ startWithFriends: { dv: "ރަހުމަތްތެރިންނާ އެކު ވާހަކަ�
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:"16px"}}>
               <div>
-                <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"6px",fontWeight:"700"}}>ވާހަކައިގެ ނަން</label>
-                <input value={newStory.title} onChange={e=>setNewStory({...newStory,title:e.target.value})} placeholder="ވާހަކައަށް ނަމެއް ދެއްވާ" style={inputStyle} />
+                <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"6px",fontWeight:"700"}}>{t("storyTitle")}</label>
+                <input value={newStory.title} onChange={e=>setNewStory({...newStory,title:e.target.value})} placeholder={t("titlePlaceholder")} style={inputStyle} />
               </div>
               <div>
-                <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"8px",fontWeight:"700"}}>ޖޯންރާ</label>
+                <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"8px",fontWeight:"700"}}>{t("genre")}</label>
                 <div style={{display:"flex",flexWrap:"wrap",gap:"8px"}}>
                   {GENRES.map(g => <button key={g.id} onClick={() => setNewStory({...newStory,genre:g.id})} style={{padding:"7px 14px",borderRadius:"999px",fontSize:"13px",fontWeight:"600",background: newStory.genre===g.id ? C.teal : C.cream,color: newStory.genre===g.id ? C.white : C.navy,border: newStory.genre===g.id ? "none" : `1.5px solid ${C.lightGray}`,cursor:"pointer"}}>{g.emoji} {lang === "en" ? g.en : g.label}</button>)}
                 </div>
               </div>
               <div>
-                <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"6px",fontWeight:"700"}}>ވާހަކައިގެ ފެށުން</label>
-                <textarea value={newStory.opening} onChange={e=>setNewStory({...newStory,opening:e.target.value})} placeholder="ވާހަކަ ފެއްޓެވުމަށް ދެތިން ފޮޅުވަތް ލިޔުއްވާ..."
+                <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"6px",fontWeight:"700"}}>{t("opening")}</label>
+                <textarea value={newStory.opening} onChange={e=>setNewStory({...newStory,opening:e.target.value})} placeholder={t("openingPlaceholder")}
                   style={{...inputStyle,resize:"none"}} rows={4} />
               </div>
               {createType === "group" && (
                 <div>
                   <label style={{color:C.navy,fontSize:"13px",display:"block",marginBottom:"6px",fontWeight:"700"}}>
-                    މި ގްރޫޕްގެ ބައިވެރިންނަށް ދައުވަތު ދެއްވުމަށް <span style={{color:C.gray}}>({selectedMembers.length}/9)</span>
+                    {t("inviteMembers")} <span style={{color:C.gray}}>({selectedMembers.length}/9)</span>
                   </label>
-                  <input value={memberSearch} onChange={e=>setMemberSearch(e.target.value)} placeholder="ނަން ހޯދާ..." style={{...inputStyle,marginBottom:"8px"}} />
+                  <input value={memberSearch} onChange={e=>setMemberSearch(e.target.value)} placeholder={t("searchName")} style={{...inputStyle,marginBottom:"8px"}} />
                   <div style={{maxHeight:"160px",overflowY:"auto",display:"flex",flexDirection:"column",gap:"6px"}}>
                     {filteredForCreate.map(u => {
                       const sel = selectedMembers.includes(u.id);
@@ -850,7 +858,7 @@ startWithFriends: { dv: "ރަހުމަތްތެރިންނާ އެކު ވާހަކަ�
               )}
               <button onClick={handleCreateStory}
                 style={{width:"100%",background: createType==="group" ? `linear-gradient(to right, ${C.coral}, ${C.amber})` : `linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color: createType==="group" ? C.navy : C.white,fontWeight:"700",padding:"13px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"14px"}}>
-                {createType==="group" ? "👥 ލިޔުއްވި ބައި ހުށަހަޅުއްވާ" : "🚀 ލިޔުއްވި ބައި ހުށަހަޅުއްވާ"}
+                {createType==="group" ? "👥 " + t("createSubmit") : "🚀 " + t("createSubmit")}
               </button>
             </div>
           </div>
