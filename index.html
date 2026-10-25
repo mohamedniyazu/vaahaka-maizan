@@ -127,6 +127,17 @@ function App() {
 
     const TEXT = {
     appName: { dv: "ވާހަކަ މައިޒާން", en: "Vaahaka Maizan" },
+          tagline: { dv: "ދިވެހި ވާހަކަ ލިޔުމުގެ ހޮޅުއަށި", en: "A home for Dhivehi stories" },
+    login: { dv: "ލޮގިން", en: "Login" },
+    register: { dv: "ރަޖިސްޓަރ", en: "Register" },
+    fullName: { dv: "ނަން", en: "Name" },
+    namePlaceholder: { dv: "ވާހަކަ ލިޔުމަށް ބޭނުން ކުރާނެ ނަމެއް", en: "A name to write stories with" },
+    password: { dv: "ޕާސްވޯޑް", en: "Password" },
+    loggingIn: { dv: "ވަންނަނީ...", en: "Logging in..." },
+    loginBtn: { dv: "ލޮގިން ކުރައްވާ", en: "Login" },
+    registerBtn: { dv: "ރަޖިސްޓަރ ކުރައްވާ", en: "Register" },
+    forgotQ: { dv: "ޕާސްވޯޑް ހަނދާން ނެތިއްޖެނަމަ؟", en: "Forgot your password?" },
+    resetPw: { dv: "ޕާސްވޯޑް ރީސެޓް ކުރައްވާ", en: "Reset password" },
     welcome: { dv: "މަރުހަބާ", en: "Welcome" },
     logout: { dv: "ވަޑައިގެން ނިކުމެވަޑައި", en: "Log out" },
     loginRegister: { dv: "ލޮގިން / ރަޖިސްޓަރ", en: "Login / Register" },
@@ -485,8 +496,8 @@ function App() {
         </div>
         <div style={{background:C.white,borderRadius:"20px",padding:"22px",boxShadow:"0 20px 60px rgba(0,0,0,0.3)"}}>
           <div style={{display:"flex",background:C.cream,borderRadius:"12px",overflow:"hidden",marginBottom:"16px",padding:"3px",gap:"3px"}}>
-            <button onClick={() => { setAuthMode("login"); setAuthError(""); }} style={{flex:1,padding:"9px",fontSize:"13px",fontWeight:"700",background: authMode==="login" ? C.teal : "transparent",color: authMode==="login" ? C.white : C.gray,border:"none",cursor:"pointer",borderRadius:"10px"}}>ލޮގިން</button>
-            <button onClick={() => { setAuthMode("register"); setAuthError(""); }} style={{flex:1,padding:"9px",fontSize:"13px",fontWeight:"700",background: authMode==="register" ? C.coral : "transparent",color: authMode==="register" ? C.white : C.gray,border:"none",cursor:"pointer",borderRadius:"10px"}}>ރަޖިސްޓަރ</button>
+            <button onClick={() => { setAuthMode("login"); setAuthError(""); }} style={{flex:1,padding:"9px",fontSize:"13px",fontWeight:"700",background: authMode==="login" ? C.teal : "transparent",color: authMode==="login" ? C.white : C.gray,border:"none",cursor:"pointer",borderRadius:"10px"}}>{t("login")}</button>
+            <button onClick={() => { setAuthMode("register"); setAuthError(""); }} style={{flex:1,padding:"9px",fontSize:"13px",fontWeight:"700",background: authMode==="register" ? C.coral : "transparent",color: authMode==="register" ? C.white : C.gray,border:"none",cursor:"pointer",borderRadius:"10px"}}>{t("register")}</button>
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:"12px"}}>
             {authMode === "register" && (
