@@ -124,6 +124,7 @@ function App() {
   const [lang, setLang] = useState(localStorage.getItem("vm_lang") || "dv");
   const toggleLang = () => { const n = lang === "dv" ? "en" : "dv"; setLang(n); localStorage.setItem("vm_lang", n); };
   const contribEndRef = useRef(null);
+useEffect(() => { document.documentElement.dir = lang === "dv" ? "rtl" : "ltr"; document.documentElement.lang = lang; }, [lang]);
 
     const TEXT = {
     appName: { dv: "ވާހަކަ މައިޒާން", en: "Vaahaka Maizan" },
@@ -148,6 +149,14 @@ errPwShort: { dv: "ޕާސްވޯޑް 6 އަކުރަށް ވުރެ ދިގުވާން
 errEmailPw: { dv: "އީމެއިލް އަދި ޕާސްވޯޑް ލިޔުއްވާ", en: "Please enter your email and password" },
 errWrongLogin: { dv: "އީމެއިލް ނުވަތަ ޕާސްވޯޑް ގޯސް", en: "Wrong email or password" },
 errEmailFirst: { dv: "ފުރަތަމަ އީމެއިލް ލިޔުއްވާ", en: "Please enter your email first" },
+resetSentTitle: { dv: "ޕާސްވޯޑް ރީސެޓް ލިންކް ފޮނުވައިފިން", en: "Password reset link sent" },
+resetSentPre: { dv: "", en: "We have sent a link to change your password to" },
+resetSentPost: { dv: " އަށް ޕާސްވޯޑް ބަދަލު ކުރާ ލިންކެއް ފޮނުވައިފިން. އީމެއިލް ހުޅުވައި ލިންކަށް ފިތާލައްވާ.", en: ". Open the email and tap the link." },
+backToLogin: { dv: "← ލޮގިން ސަފްހާއަށް", en: "← Back to login" },
+checkEmail: { dv: "އީމެއިލް ބައްލަވާލައްވާ", en: "Check your email" },
+verifyPre: { dv: "", en: "We have sent a confirmation link to" },
+verifyPost: { dv: " އަށް ކޮންފާމޭޝަން ލިންކެއް ފޮނުވައިފިން. އީމެއިލް ހުޅުވައި ލިންކަށް ފިތާލައްވާ. ރަޖިސްޓްރޭޝަން ފުރިހަމަ ވާނީ ދެން.", en: ". Open the email and tap the link to finish registering." },
+spamHint: { dv: "އީމެއިލް ނުލިބިއްޖެ ނަމަ Spam ފޯލްޑަރ ބައްލަވާ", en: "No email? Please check your Spam folder" },
   };
   const t = (key) => (TEXT[key] ? (TEXT[key][lang] || TEXT[key].dv) : key);
   const showNotif = (msg) => { setNotification(msg); setTimeout(() => setNotification(""), 3000); };
@@ -447,7 +456,7 @@ errEmailFirst: { dv: "ފުރަތަމަ އީމެއިލް ލިޔުއްވާ", en: "
     await sb.from("contributions").delete().eq("id", contrib.id);
     setContributions(prev => prev.filter(c => c.id !== contrib.id));
   };
-  const inputStyle = { width:"100%", background:C.white, color:C.navy, borderRadius:"12px", padding:"12px 16px", border:`1.5px solid ${C.lightGray}`, outline:"none", fontSize:"14px", direction:"rtl" };
+  const inputStyle = { width:"100%", background:C.white, color:C.navy, borderRadius:"12px", padding:"12px 16px", border:`1.5px solid ${C.lightGray}`, outline:"none", fontSize:"14px", direction: lang === "dv" ? "rtl" : "ltr" };
 
   if (loading) return <LoadingScreen />;
 
@@ -457,12 +466,12 @@ errEmailFirst: { dv: "ފުރަތަމަ އީމެއިލް ލިޔުއްވާ", en: "
       <div style={{width:"100%",maxWidth:"420px"}}>
         <div style={{background:C.white,borderRadius:"20px",padding:"28px",boxShadow:"0 20px 60px rgba(0,0,0,0.3)",textAlign:"center"}}>
           <div style={{fontSize:"48px",marginBottom:"16px"}}>🔑</div>
-          <h2 style={{color:C.navy,fontSize:"20px",fontWeight:"800",margin:"0 0 12px"}}>ޕާސްވޯޑް ރީސެޓް ލިންކް ފޮނުވައިފިން</h2>
+          <h2 style={{color:C.navy,fontSize:"20px",fontWeight:"800",margin:"0 0 12px"}}>{t("resetSentTitle")}</h2>
           <p style={{color:C.gray,fontSize:"14px",lineHeight:"1.7",margin:"0 0 20px"}}>
-            <strong style={{color:C.navy}}>{loginEmail}</strong> އަށް ޕާސްވޯޑް ބަދަލު ކުރާ ލިންކެއް ފޮނުވައިފިން. އީމެއިލް ހުޅުވައި ލިންކަށް ފިތާލައްވާ.
+            {t("resetSentPre")} <strong style={{color:C.navy}}>{loginEmail}</strong>{t("resetSentPost")}
           </p>
           <button onClick={() => { setAuthMode("login"); setAuthError(""); }} style={{width:"100%",background:`linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color:C.white,fontWeight:"700",padding:"13px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"14px"}}>
-            ← ލޮގިން ސަފްހާއަށް
+            {t("backToLogin")}
           </button>
         </div>
       </div>
@@ -473,19 +482,19 @@ errEmailFirst: { dv: "ފުރަތަމަ އީމެއިލް ލިޔުއްވާ", en: "
       <div style={{width:"100%",maxWidth:"420px"}}>
         <div style={{textAlign:"center",marginBottom:"28px"}}>
           <div style={{width:"80px",height:"80px",borderRadius:"50%",background:C.coral,margin:"0 auto 14px",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"40px",boxShadow:"0 8px 24px rgba(255,87,87,0.4)"}}>📧</div>
-          <h1 style={{fontSize:"28px",fontWeight:"900",color:C.white,margin:"0 0 6px"}}>ވާހަކަ މައިޒާން</h1>
+          <h1 style={{fontSize:"28px",fontWeight:"900",color:C.white,margin:"0 0 6px"}}>{t("appName")}</h1>
         </div>
         <div style={{background:C.white,borderRadius:"20px",padding:"28px",boxShadow:"0 20px 60px rgba(0,0,0,0.3)",textAlign:"center"}}>
           <div style={{fontSize:"48px",marginBottom:"16px"}}>✉️</div>
-          <h2 style={{color:C.navy,fontSize:"20px",fontWeight:"800",margin:"0 0 12px"}}>އީމެއިލް ބައްލަވާލައްވާ</h2>
+          <h2 style={{color:C.navy,fontSize:"20px",fontWeight:"800",margin:"0 0 12px"}}>{t("checkEmail")}</h2>
           <p style={{color:C.gray,fontSize:"14px",lineHeight:"1.7",margin:"0 0 20px"}}>
-            <strong style={{color:C.navy}}>{loginEmail}</strong> އަށް ކޮންފާމޭޝަން ލިންކެއް ފޮނުވައިފިން. އީމެއިލް ހުޅުވައި ލިންކަށް ފިތާލައްވާ. ރަޖިސްޓްރޭޝަން ފުރިހަމަ ވާނީ ދެން.
+            {t("verifyPre")} <strong style={{color:C.navy}}>{loginEmail}</strong>{t("verifyPost")}
           </p>
           <div style={{background:C.tealLight,borderRadius:"12px",padding:"14px",marginBottom:"20px"}}>
-            <p style={{color:C.tealDark,fontSize:"13px",margin:0,fontWeight:"600"}}>📌 އީމެއިލް ނުލިބިއްޖެ ނަމަ Spam ފޯލްޑަރ ބައްލަވާ</p>
+            <p style={{color:C.tealDark,fontSize:"13px",margin:0,fontWeight:"600"}}>📌 {t("spamHint")}</p>
           </div>
           <button onClick={() => setAuthMode("login")} style={{width:"100%",background:`linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color:C.white,fontWeight:"700",padding:"13px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"14px"}}>
-            ← ލޮގިން ސަފްހާއަށް
+            {t("backToLogin")}
           </button>
         </div>
       </div>
