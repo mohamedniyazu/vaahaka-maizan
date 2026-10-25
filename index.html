@@ -123,7 +123,8 @@ function App() {
   const [allLikes, setAllLikes] = useState([]);
   const [lang, setLang] = useState(localStorage.getItem("vm_lang") || "dv");
   const toggleLang = () => { const n = lang === "dv" ? "en" : "dv"; setLang(n); localStorage.setItem("vm_lang", n); };
-  const contribEndRef = useRef(null);
+  const flip = lang === "en" ? "row-reverse" : "row";
+const contribEndRef = useRef(null);
 useEffect(() => { document.documentElement.dir = lang === "dv" ? "rtl" : "ltr"; document.documentElement.lang = lang; }, [lang]);
 
     const TEXT = {
@@ -193,6 +194,20 @@ inviteMember: { dv: "މެންބަރަކު ދައުވަތު ދޭ", en: "Invite a 
 slotsLeft: { dv: "ސްލޮޓް ބާކީ", en: "slots left" },
 noNameFound: { dv: "ހޯދާ ނަމެއް ނެތް", en: "No matching names" },
 inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
+joinedGroup: { dv: "ގްރޫޕް ވާހަކައަށް ބައިވެރިވެވިއްޖެ! 🎉", en: "You joined the group story! 🎉" },
+inviteDeclined: { dv: "ދައުވަތު ދެކޮޅުކޮށްފިން.", en: "Invitation declined." },
+partAdded: { dv: "ލިޔުން ލިބިއްޖެ! ✨", en: "Your part was added! ✨" },
+storyDone: { dv: "ވާހަކަ ނިންމާލެވިއްޖެ! 🎉", en: "Story finished! 🎉" },
+alreadyMember: { dv: "މި ފަރާތް ހިމެނިފައިވޭ.", en: "This person is already a member." },
+groupFull: { dv: "10 މެންބަރުންގެ ލިމިޓް ފުރިއްޖެ!", en: "The group is full (10 members)!" },
+inviteSentPre: { dv: "", en: "Invitation sent to " },
+inviteSentPost: { dv: " އަށް ދައުވަތު ފޮނުވައިފިން!", en: "!" },
+somethingWrong: { dv: "ކޮންމެވެސް ގޯހެއް ވިއްޖެ", en: "Something went wrong" },
+groupStarted: { dv: "ގްރޫޕް ވާހަކަ ފަށައިފިން! 🎉", en: "Group story started! 🎉" },
+storyPublished: { dv: "ވާހަކަ ޝާއިއުކޮށްފިން! 🎉", en: "Story published! 🎉" },
+confirmDeleteStory: { dv: "Delete this whole story and all its posts?", en: "Delete this whole story and all its posts?" },
+storyDeleted: { dv: "Story deleted", en: "Story deleted" },
+confirmDeletePost: { dv: "Delete this post?", en: "Delete this post?" },
   };
   const t = (key) => (TEXT[key] ? (TEXT[key][lang] ?? TEXT[key].dv) : key);
   const showNotif = (msg) => { setNotification(msg); setTimeout(() => setNotification(""), 3000); };
@@ -369,13 +384,13 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
     // Reload group stories
     await loadGroupStories(session);
     setActiveTab("group");
-    showNotif("ގްރޫޕް ވާހަކައަށް ބައިވެރިވެވިއްޖެ! 🎉");
+    showNotif(t("joinedGroup"));
   };
 
   const handleDeclineInvite = async (invite) => {
     await sb.from("story_invites").update({ status:"declined" }).eq("id", invite.id);
     setPendingInvites(prev => prev.filter(i => i.id !== invite.id));
-    showNotif("ދައުވަތު ދެކޮޅުކޮށްފިން.");
+    showNotif(t("inviteDeclined"));
   };
 
   const openStory = async (story) => {
@@ -399,7 +414,7 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
     if (!error && data) {
       setContributions(prev => [...prev, data]);
       setNewContrib("");
-      showNotif("ލިޔުން ލިބިއްޖެ! ✨");
+      showNotif(t("partAdded"));
     }
   };
 
@@ -408,20 +423,20 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
     setSelectedStory(prev => ({ ...prev, finished: true }));
     if (selectedStory.type === "public") setPublicStories(prev => prev.map(s => s.id === selectedStory.id ? { ...s, finished: true } : s));
     else setGroupStories(prev => prev.map(s => s.id === selectedStory.id ? { ...s, finished: true } : s));
-    showNotif("ވާހަކަ ނިންމާލެވިއްޖެ! 🎉");
+    showNotif(t("storyDone"));
   };
 
   const handleInviteMember = async (user) => {
     if (!selectedStory) return;
     const members = selectedStory.members || [];
-    if (members.some(m => m.user_id === user.id)) { showNotif("މި ފަރާތް ހިމެނިފައިވޭ."); return; }
-    if (members.length >= 10) { showNotif("10 މެންބަރުންގެ ލިމިޓް ފުރިއްޖެ!"); return; }
+    if (members.some(m => m.user_id === user.id)) { showNotif(t("alreadyMember")); return; }
+    if (members.length >= 10) { showNotif(t("groupFull")); return; }
     const profile = allUsers.find(u => u.id === session.user.id);
     await sb.from("story_invites").insert({
       story_id: selectedStory.id, invitee_id: user.id,
       inviter_id: session.user.id, inviter_name: profile?.name, status: "pending"
     });
-    showNotif(user.name + " އަށް ދައުވަތު ފޮނުވައިފިން!");
+    showNotif(t("inviteSentPre") + user.name + t("inviteSentPost"));
     setShowInvite(false); setInviteSearch("");
   };
 
@@ -436,7 +451,7 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
       creator_id: session.user.id, creator_name: profile?.name,
       creator_avatar: profile?.avatar_letter, type: createType, finished: false,
     }).select().single();
-    if (error || !story) { showNotif("ކޮންމެވެސް ގޯހެއް ވިއްޖެ"); return; }
+    if (error || !story) { showNotif(t("somethingWrong")); return; }
 
     // Add user opening only - no narrator
     await sb.from("contributions").insert({ story_id: story.id, user_id: session.user.id, type: "user", text: newStory.opening, author_name: profile?.name, author_avatar: profile?.avatar_letter });
@@ -456,7 +471,7 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
     setNewStory({ title:"", genre:"fantasy", opening:"" });
     setSelectedMembers([]); setMemberSearch("");
     setActiveTab(createType === "group" ? "group" : "public");
-    showNotif(createType === "group" ? "ގްރޫޕް ވާހަކަ ފަށައިފިން! 🎉" : "ވާހަކަ ޝާއިއުކޮށްފިން! 🎉");
+    showNotif(createType === "group" ? t("groupStarted") : t("storyPublished"));
   };
 
   const currentProfile = allUsers.find(u => u.id === session?.user?.id);
@@ -476,7 +491,7 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
   };
 
   const handleDeleteStory = async (story) => {
-    if (!window.confirm("Delete this whole story and all its posts?")) return;
+    if (!window.confirm(t("confirmDeleteStory"))) return;
     await sb.from("contributions").delete().eq("story_id", story.id);
     await sb.from("story_members").delete().eq("story_id", story.id);
     await sb.from("story_invites").delete().eq("story_id", story.id);
@@ -484,11 +499,11 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
     setPublicStories(prev => prev.filter(s => s.id !== story.id));
     setGroupStories(prev => prev.filter(s => s.id !== story.id));
     if (selectedStory && selectedStory.id === story.id) setScreen("home");
-    showNotif("Story deleted");
+    showNotif(t("storyDeleted"));
   };
 
   const handleDeleteContribution = async (contrib) => {
-    if (!window.confirm("Delete this post?")) return;
+    if (!window.confirm(t("confirmDeletePost"))) return;
     await sb.from("contributions").delete().eq("id", contrib.id);
     setContributions(prev => prev.filter(c => c.id !== contrib.id));
   };
@@ -610,7 +625,7 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
                   {selectedStory.type === "group" && <Badge bg={C.amber} color={C.navy}>🔒 {t("groupTab")}</Badge>}
                   {selectedStory.finished && <Badge bg={C.mint} color={C.navy}>✅ {t("finished")}</Badge>}
                 </div>
-                <h1 style={{fontSize:"17px",fontWeight:"800",color:C.white,margin:"0 0 4px",lineHeight:"1.3"}}>{selectedStory.title}</h1>
+                <h1 style={{fontSize:"17px",fontWeight:"800",color:C.white,margin:"0 0 4px",lineHeight:"1.3"}} dir="auto">{selectedStory.title}</h1>
                 <p style={{fontSize:"12px",color:"rgba(255,255,255,0.7)",margin:0}}>{t("startedBy")}: {selectedStory.creator_name}</p>
               </div>
             </div>
@@ -637,7 +652,7 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
                 <Avatar letter={c.author_avatar || "?"} size={36} bg={c.user_id === session?.user?.id ? C.coral : C.teal} />
                 <div style={{maxWidth:"75%",display:"flex",flexDirection:"column",alignItems: c.user_id === session?.user?.id ? "flex-end" : "flex-start"}}>
                   <span style={{fontSize:"11px",color:C.gray,marginBottom:"3px",fontWeight:"600"}}>{c.author_name} · {new Date(c.created_at).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})}</span>
-                  <div style={{borderRadius:"16px",padding:"12px 16px",fontSize:"14px",lineHeight:"1.7",background: c.user_id === session?.user?.id ? `linear-gradient(135deg, ${C.coral}, #ff7070)` : C.white,color: c.user_id === session?.user?.id ? C.white : C.navy,boxShadow: c.user_id === session?.user?.id ? `0 4px 16px rgba(255,87,87,0.3)` : "0 2px 8px rgba(10,37,51,0.08)",border: c.user_id === session?.user?.id ? "none" : `1.5px solid ${C.lightGray}`}}>{c.text}</div>{isAdmin && <button onClick={() => handleDeleteContribution(c)} style={{marginTop:"4px",background:"none",border:"none",color:"#FF5757",cursor:"pointer",fontSize:"16px",padding:"2px"}}>🗑️</button>}
+                  <div style={{borderRadius:"16px",padding:"12px 16px",fontSize:"14px",lineHeight:"1.7",background: c.user_id === session?.user?.id ? `linear-gradient(135deg, ${C.coral}, #ff7070)` : C.white,color: c.user_id === session?.user?.id ? C.white : C.navy,boxShadow: c.user_id === session?.user?.id ? `0 4px 16px rgba(255,87,87,0.3)` : "0 2px 8px rgba(10,37,51,0.08)",border: c.user_id === session?.user?.id ? "none" : `1.5px solid ${C.lightGray}`}} dir="auto">{c.text}</div>{isAdmin && <button onClick={() => handleDeleteContribution(c)} style={{marginTop:"4px",background:"none",border:"none",color:"#FF5757",cursor:"pointer",fontSize:"16px",padding:"2px"}}>🗑️</button>}
                 </div>
               </div>
             </div>
@@ -675,7 +690,7 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
         {showInvite && (
           <div style={{position:"fixed",inset:0,background:"rgba(10,37,51,0.6)",zIndex:50,display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"16px"}}>
             <div style={{background:C.white,borderRadius:"20px",padding:"24px",width:"100%",maxWidth:"512px"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px",flexDirection:flip}}>
                 <button onClick={() => { setShowInvite(false); setInviteSearch(""); }} style={{background:C.cream,border:"none",color:C.navy,cursor:"pointer",width:"32px",height:"32px",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px"}}>✕</button>
                 <h3 style={{color:C.navy,fontWeight:"700",margin:0,fontSize:"16px"}}>{t("inviteMember")}</h3>
               </div>
@@ -684,9 +699,9 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
               <div style={{maxHeight:"200px",overflowY:"auto",display:"flex",flexDirection:"column",gap:"8px"}}>
                 {filteredInvite.length === 0 ? <p style={{color:C.gray,textAlign:"center",padding:"16px",fontSize:"14px"}}>{t("noNameFound")}</p>
                   : filteredInvite.map(u => (
-                  <div key={u.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:C.cream,borderRadius:"12px",padding:"12px 16px"}}>
+                  <div key={u.id} style={{display:"flex",flexDirection:flip,alignItems:"center",justifyContent:"space-between",background:C.cream,borderRadius:"12px",padding:"12px 16px"}}>
                     <button onClick={() => handleInviteMember(u)} style={{background:`linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color:C.white,fontSize:"12px",padding:"7px 14px",borderRadius:"8px",border:"none",cursor:"pointer",fontWeight:"700"}}>{t("inviteBtn")}</button>
-                    <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"10px",flexDirection:flip}}>
                       <span style={{fontSize:"14px",color:C.navy,fontWeight:"600"}}>{u.name}</span>
                       <Avatar letter={u.avatar_letter} size={32} bg={C.teal} />
                     </div>
@@ -734,13 +749,13 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
           <div style={{background:`linear-gradient(135deg, ${C.amber}22, ${C.amber}11)`,border:`2px solid ${C.amber}`,borderRadius:"16px",padding:"16px",marginBottom:"16px"}}>
             <h3 style={{color:C.navy,fontWeight:"700",fontSize:"14px",margin:"0 0 12px"}}>🔔 {t("groupInvites")}</h3>
             {pendingInvites.map(invite => (
-              <div key={invite.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:C.white,borderRadius:"12px",padding:"12px 16px",marginBottom:"6px"}}>
+              <div key={invite.id} style={{display:"flex",flexDirection:flip,alignItems:"center",justifyContent:"space-between",background:C.white,borderRadius:"12px",padding:"12px 16px",marginBottom:"6px"}}>
                 <div style={{display:"flex",gap:"8px"}}>
                   <button onClick={() => handleDeclineInvite(invite)} style={{background:C.cream,color:C.gray,fontSize:"12px",padding:"7px 14px",borderRadius:"8px",border:`1.5px solid ${C.lightGray}`,cursor:"pointer",fontWeight:"700"}}>{t("decline")}</button>
                   <button onClick={() => handleAcceptInvite(invite)} style={{background:`linear-gradient(to right, ${C.amber}, #ffcc33)`,color:C.navy,fontSize:"12px",padding:"7px 14px",borderRadius:"8px",border:"none",cursor:"pointer",fontWeight:"700"}}>{t("accept")}</button>
                 </div>
                 <div style={{textAlign:"start"}}>
-                  <p style={{color:C.navy,fontSize:"14px",fontWeight:"700",margin:0}}>{invite.stories?.title}</p>
+                  <p style={{color:C.navy,fontSize:"14px",fontWeight:"700",margin:0}} dir="auto">{invite.stories?.title}</p>
                   <p style={{color:C.gray,fontSize:"12px",margin:0}}>{t("invitedByPre")}{invite.inviter_name}{t("invitedByPost")}</p>
                 </div>
               </div>
@@ -778,7 +793,7 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
                         <Badge bg="rgba(255,255,255,0.25)">{lang === "en" ? genre?.en : genre?.label}</Badge>
                         {story.finished && <Badge bg={C.mint} color={C.navy}>{t("finished")}</Badge>}
                       </div>
-                      <h3 style={{color:C.white,fontWeight:"800",fontSize:"17px",margin:"0 0 3px"}}>{story.title}</h3>
+                      <h3 style={{color:C.white,fontWeight:"800",fontSize:"17px",margin:"0 0 3px"}} dir="auto">{story.title}</h3>
                       <p style={{color:"rgba(255,255,255,0.7)",fontSize:"12px",margin:0}}>{t("startedBy")} {story.creator_name}</p>
                     </div>
                   </div>
@@ -805,7 +820,7 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
       {showCreate && (
         <div style={{position:"fixed",inset:0,background:"rgba(10,37,51,0.6)",zIndex:50,display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"16px"}}>
           <div style={{background:C.white,borderRadius:"20px 20px 16px 16px",padding:"24px",width:"100%",maxWidth:"512px",boxShadow:"0 -8px 40px rgba(0,0,0,0.2)",maxHeight:"90vh",overflowY:"auto"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px",flexDirection:flip}}>
               <button onClick={() => { setShowCreate(false); setSelectedMembers([]); setMemberSearch(""); }} style={{background:C.cream,border:"none",color:C.navy,cursor:"pointer",width:"32px",height:"32px",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"700"}}>✕</button>
               <h3 style={{color:C.navy,fontWeight:"800",fontSize:"17px",margin:0}}>{t("startStory")}</h3>
             </div>
@@ -840,11 +855,11 @@ inviteBtn: { dv: "ދައުވަތު ދޭ", en: "Invite" },
                       const sel = selectedMembers.includes(u.id);
                       return (
                         <div key={u.id} onClick={() => { if(sel) setSelectedMembers(p=>p.filter(id=>id!==u.id)); else if(selectedMembers.length<9) setSelectedMembers(p=>[...p,u.id]); }}
-                          style={{display:"flex",alignItems:"center",justifyContent:"space-between",borderRadius:"12px",padding:"10px 14px",cursor:"pointer",background: sel ? `${C.teal}15` : C.cream,border: sel ? `1.5px solid ${C.teal}` : `1.5px solid transparent`}}>
+                          style={{display:"flex",flexDirection:flip,alignItems:"center",justifyContent:"space-between",borderRadius:"12px",padding:"10px 14px",cursor:"pointer",background: sel ? `${C.teal}15` : C.cream,border: sel ? `1.5px solid ${C.teal}` : `1.5px solid transparent`}}>
                           <div style={{width:"22px",height:"22px",borderRadius:"50%",border: sel ? `2px solid ${C.teal}` : `2px solid ${C.lightGray}`,background: sel ? C.teal : "transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
                             {sel && <span style={{fontSize:"11px",color:C.white,fontWeight:"700"}}>✓</span>}
                           </div>
-                          <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                          <div style={{display:"flex",alignItems:"center",gap:"10px",flexDirection:flip}}>
                             <span style={{fontSize:"14px",color:C.navy,fontWeight:"600"}}>{u.name}</span>
                             <Avatar letter={u.avatar_letter} size={30} bg={C.teal} />
                           </div>
