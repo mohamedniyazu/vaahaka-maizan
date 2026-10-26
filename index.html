@@ -122,6 +122,9 @@ function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [storiesLoading, setStoriesLoading] = useState(false);
   const [allLikes, setAllLikes] = useState([]);
+const [showEditName, setShowEditName] = useState(false);
+const [editNameValue, setEditNameValue] = useState("");
+const [savingName, setSavingName] = useState(false);
   const [lang, setLang] = useState(localStorage.getItem("vm_lang") || "dv");
   const toggleLang = () => { const n = lang === "dv" ? "en" : "dv"; setLang(n); localStorage.setItem("vm_lang", n); };
   const flip = lang === "en" ? "row-reverse" : "row";
@@ -209,6 +212,11 @@ storyPublished: { dv: "ވާހަކަ ޝާއިއުކޮށްފިން! 🎉", en: "St
 confirmDeleteStory: { dv: "Delete this whole story and all its posts?", en: "Delete this whole story and all its posts?" },
 storyDeleted: { dv: "Story deleted", en: "Story deleted" },
 confirmDeletePost: { dv: "Delete this post?", en: "Delete this post?" },
+editName: { dv: "ނަން ބަދަލުކުރައްވާ", en: "Edit your name" },
+editNameHint: { dv: "އައު ނަން ތިބާގެ ވާހަކަތަކާއި ލިޔުންތަކުގައި ވެސް ދައްކާނެ.", en: "Your new name will also show on your stories and posts." },
+save: { dv: "ސޭވް ކުރައްވާ", en: "Save" },
+cancel: { dv: "ކެންސަލް", en: "Cancel" },
+nameSaved: { dv: "ނަން ބަދަލުކުރެވިއްޖެ ✓", en: "Name updated ✓" },
   };
   const t = (key) => (TEXT[key] ? (TEXT[key][lang] ?? TEXT[key].dv) : key);
   const showNotif = (msg) => { setNotification(msg); setTimeout(() => setNotification(""), 3000); };
@@ -369,7 +377,22 @@ confirmDeletePost: { dv: "Delete this post?", en: "Delete this post?" },
     setAuthError("");
     setAuthMode("forgot_sent");
   };
-    const handleLogout = async () => {
+    const handleSaveName = async () => {
+const name = editNameValue.trim();
+if (!name || !session) return;
+const letter = name.charAt(0);
+setSavingName(true);
+const { data, error } = await sb.from("profiles").update({ name, avatar_letter: letter }).eq("id", session.user.id).select();
+if (error || !data || data.length === 0) { setSavingName(false); showNotif(t("somethingWrong")); return; }
+await sb.from("stories").update({ creator_name: name, creator_avatar: letter }).eq("creator_id", session.user.id);
+await sb.rpc("update_my_author_name", { new_name: name, new_letter: letter });
+setAllUsers(prev => prev.map(u => u.id === session.user.id ? { ...u, name, avatar_letter: letter } : u));
+setSavingName(false);
+setShowEditName(false);
+showNotif(t("nameSaved"));
+loadAllData(session);
+};
+const handleLogout = async () => {
     await sb.auth.signOut();
     setScreen("login"); setSession(null);
     setPublicStories([]); setGroupStories([]);
@@ -731,7 +754,7 @@ const filteredForCreate = allUsers.filter(u => u.id !== session?.user?.id && u.n
             <Avatar letter={currentProfile?.avatar_letter || "?"} size={38} bg={C.coral} />
             <div>
               <p style={{fontSize:"11px",color:"rgba(255,255,255,0.7)",margin:0,fontWeight:"600"}}>{t("welcome")}</p>
-              <p style={{fontSize:"13px",fontWeight:"700",color:C.white,margin:0}}>{currentProfile?.name}</p>
+              <p onClick={() => { setEditNameValue(currentProfile?.name || ""); setShowEditName(true); }} title={t("editName")} style={{fontSize:"13px",fontWeight:"700",color:C.white,margin:0,cursor:"pointer"}}>{currentProfile?.name} <span style={{fontSize:"11px",opacity:0.8}}>✏️</span></p>
             </div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
@@ -821,7 +844,21 @@ const filteredForCreate = allUsers.filter(u => u.id !== session?.user?.id && u.n
         )}
       </div>
 
-      {showCreate && (
+      {showEditName && (
+<div style={{position:"fixed",inset:0,background:"rgba(10,37,51,0.6)",zIndex:60,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
+<div style={{background:C.white,borderRadius:"20px",padding:"24px",width:"100%",maxWidth:"400px",boxShadow:"0 20px 60px rgba(0,0,0,0.3)"}}>
+<h3 style={{color:C.navy,fontWeight:"800",fontSize:"17px",margin:"0 0 12px"}}>{t("editName")}</h3>
+<input value={editNameValue} onChange={e=>setEditNameValue(e.target.value)} maxLength={40} dir="auto" style={{...inputStyle,direction:undefined}} />
+<p style={{color:C.gray,fontSize:"12px",margin:"8px 0 16px",lineHeight:"1.6"}}>{t("editNameHint")}</p>
+<div style={{display:"flex",gap:"8px"}}>
+<button onClick={handleSaveName} disabled={savingName} style={{flex:1,background:`linear-gradient(to right, ${C.teal}, ${C.tealDark})`,color:C.white,fontWeight:"700",padding:"12px",borderRadius:"12px",border:"none",cursor:"pointer",fontSize:"14px",opacity:savingName?0.7:1}}>{savingName ? t("pleaseWait") : t("save")}</button>
+<button onClick={() => setShowEditName(false)} style={{flex:1,background:C.cream,color:C.navy,fontWeight:"700",padding:"12px",borderRadius:"12px",border:`1.5px solid ${C.lightGray}`,cursor:"pointer",fontSize:"14px"}}>{t("cancel")}</button>
+</div>
+</div>
+</div>
+)}
+
+{showCreate && (
         <div style={{position:"fixed",inset:0,background:"rgba(10,37,51,0.6)",zIndex:50,display:"flex",alignItems:"flex-end",justifyContent:"center",padding:"16px"}}>
           <div style={{background:C.white,borderRadius:"20px 20px 16px 16px",padding:"24px",width:"100%",maxWidth:"512px",boxShadow:"0 -8px 40px rgba(0,0,0,0.2)",maxHeight:"90vh",overflowY:"auto"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px",flexDirection:flip}}>
